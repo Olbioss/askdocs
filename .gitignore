@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude Code agent skills (installed locally, regenerable)
+/.agents/
+skills-lock.json
+
+# editors
+.vscode/
+.idea/
+
+# logs
+*.log
