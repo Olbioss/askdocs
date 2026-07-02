@@ -40,11 +40,15 @@ export async function DELETE(req: Request) {
   const doc = await getOwnedDocument(id, user.id);
   if (!doc) return jsonError("Document not found", 404);
 
+  // DB row first — it's the source of truth. A failed storage removal only
+  // orphans a file (logged below); the reverse order could strand a row whose
+  // file is already gone.
+  await deleteOwnedDocument(id, user.id);
+
   const { error: storageErr } = await supabase.storage
     .from("documents")
     .remove([doc.filePath]);
   if (storageErr) console.error("Storage delete failed:", storageErr.message);
 
-  await deleteOwnedDocument(id, user.id);
   return NextResponse.json({ ok: true, id }, { status: 200 });
 }

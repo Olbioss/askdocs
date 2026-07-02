@@ -9,6 +9,10 @@ import { jsonError } from "@/lib/http";
 // Allow streaming responses up to 30s (raise on Pro if needed).
 export const maxDuration = 30;
 
+const MAX_QUESTION_CHARS = 4000;
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function buildSystemPrompt(chunks: RetrievedChunk[]): string {
   if (chunks.length === 0) {
     return [
@@ -59,10 +63,25 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) return jsonError("Unauthorized", 401);
 
-  // 2. parse the AskInput contract your client sends
-  const { question, documentId }: AskInput = await req.json();
-  if (!question?.trim()) {
+  // 2. parse + validate the AskInput contract your client sends
+  let input: AskInput;
+  try {
+    input = (await req.json()) as AskInput;
+  } catch {
+    return jsonError("Invalid JSON body", 400);
+  }
+  const { question, documentId } = input;
+  if (typeof question !== "string" || !question.trim()) {
     return jsonError("No question provided", 400);
+  }
+  if (question.length > MAX_QUESTION_CHARS) {
+    return jsonError(
+      `Question too long (max ${MAX_QUESTION_CHARS} characters)`,
+      400,
+    );
+  }
+  if (documentId !== undefined && !UUID_RE.test(String(documentId))) {
+    return jsonError("Invalid documentId", 400);
   }
 
   // 3. retrieve (scoped to this user, optional single-doc)

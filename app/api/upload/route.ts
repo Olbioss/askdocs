@@ -10,6 +10,18 @@ const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 // Ingestion runs inline (extract → embed → store), so give large files headroom.
 export const maxDuration = 60;
 
+/**
+ * Storage object keys choke on exotic characters and unbounded length; the
+ * original filename stays untouched in the DB row.
+ */
+export function sanitizeForStoragePath(name: string): string {
+  const dot = name.lastIndexOf(".");
+  const base = dot > 0 ? name.slice(0, dot) : name;
+  const ext = dot > 0 ? name.slice(dot) : "";
+  const clean = (s: string) => s.replace(/[^A-Za-z0-9._-]+/g, "_");
+  return clean(base).slice(0, 100) + clean(ext);
+}
+
 export async function POST(req: Request) {
   const supabase = await createClient();
   const {
@@ -37,13 +49,20 @@ export async function POST(req: Request) {
 
   const buffer = await file.arrayBuffer();
 
-  const filePath = `${userId}/${crypto.randomUUID()}-${file.name}`;
+  const filePath = `${userId}/${crypto.randomUUID()}-${sanitizeForStoragePath(file.name)}`;
   const { error: upErr } = await supabase.storage
     .from("documents")
     .upload(filePath, buffer, { contentType: file.type });
   if (upErr) return jsonError(`Storage failed: ${upErr.message}`, 500);
 
-  const doc = await createDocument({ userId, filename: file.name, filePath });
+  let doc;
+  try {
+    doc = await createDocument({ userId, filename: file.name, filePath });
+  } catch (err) {
+    // don't orphan the stored object when no row references it
+    await supabase.storage.from("documents").remove([filePath]);
+    return jsonError(`Could not record document: ${String(err)}`, 500);
+  }
 
   // Ingestion is awaited for MVP simplicity; move to a background job once large files approach the serverless timeout.
   try {

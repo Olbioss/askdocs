@@ -2,10 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const getUser = vi.fn();
 const upload = vi.fn();
+const remove = vi.fn();
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     auth: { getUser },
-    storage: { from: () => ({ upload }) },
+    storage: { from: () => ({ upload, remove }) },
   }),
 }));
 vi.mock("@/lib/ai/extract", () => ({
@@ -35,6 +36,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
   upload.mockResolvedValue({ error: null });
+  remove.mockResolvedValue({ error: null });
   createDocument.mockResolvedValue({
     id: "doc-1",
     filename: "a.pdf",
@@ -95,6 +97,24 @@ describe("POST /api/upload", () => {
   it("500 when storage upload fails", async () => {
     upload.mockResolvedValue({ error: { message: "boom" } });
     expect((await POST(reqWith(pdf()))).status).toBe(500);
+  });
+
+  it("sanitizes the storage path but keeps the original filename", async () => {
+    const res = await POST(reqWith(pdf("héllo wörld?.pdf")));
+    expect(res.status).toBe(200);
+    const path = upload.mock.calls[0][0] as string;
+    expect(path).toMatch(/^user-1\/[0-9a-f-]{36}-h_llo_w_rld_\.pdf$/);
+    expect(createDocument).toHaveBeenCalledWith(
+      expect.objectContaining({ filename: "héllo wörld?.pdf" }),
+    );
+  });
+
+  it("removes the stored file when the DB insert fails (500)", async () => {
+    createDocument.mockRejectedValue(new Error("db down"));
+    const res = await POST(reqWith(pdf()));
+    expect(res.status).toBe(500);
+    const path = upload.mock.calls[0][0] as string;
+    expect(remove).toHaveBeenCalledWith([path]);
   });
 
   it("500 with failed status when ingestion throws", async () => {

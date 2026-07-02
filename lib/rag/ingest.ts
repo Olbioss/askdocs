@@ -19,20 +19,24 @@ export async function ingestDocument(
 
     const embeddings = await embedChunks(pieces.map((p) => p.content));
 
-    // bulk insert - embeddings line up with pieces by index
-    await db.insert(chunks).values(
-      pieces.map((p, i) => ({
-        documentId,
-        content: p.content,
-        embedding: embeddings[i],
-        metadata: p.metadata,
-      })),
-    );
+    // one transaction: chunks must never be queryable while the document
+    // isn't "ready" (and vice versa on failure)
+    await db.transaction(async (tx) => {
+      // bulk insert - embeddings line up with pieces by index
+      await tx.insert(chunks).values(
+        pieces.map((p, i) => ({
+          documentId,
+          content: p.content,
+          embedding: embeddings[i],
+          metadata: p.metadata,
+        })),
+      );
 
-    await db
-      .update(documents)
-      .set({ status: "ready" })
-      .where(eq(documents.id, documentId));
+      await tx
+        .update(documents)
+        .set({ status: "ready" })
+        .where(eq(documents.id, documentId));
+    });
 
     return { chunkCount: pieces.length };
   } catch (err) {

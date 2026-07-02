@@ -86,6 +86,34 @@ describe("POST /api/chat", () => {
     expect((await POST(jsonReq({ question: "  " }))).status).toBe(400);
   });
 
+  it("400 when the body isn't valid JSON", async () => {
+    const req = {
+      json: async () => {
+        throw new SyntaxError("Unexpected token");
+      },
+      signal: new AbortController().signal,
+    } as unknown as Request;
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: expect.stringMatching(/json/i) });
+  });
+
+  it("400 when question is not a string", async () => {
+    expect((await POST(jsonReq({ question: 42 }))).status).toBe(400);
+  });
+
+  it("400 when question exceeds the length cap", async () => {
+    const res = await POST(jsonReq({ question: "x".repeat(4001) }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: expect.stringMatching(/long/i) });
+  });
+
+  it("400 when documentId is not a UUID", async () => {
+    const res = await POST(jsonReq({ question: "hi", documentId: "not-a-uuid" }));
+    expect(res.status).toBe(400);
+    expect(retrieveChunks).not.toHaveBeenCalled();
+  });
+
   it("500 when retrieval throws", async () => {
     retrieveChunks.mockRejectedValue(new Error("no key"));
     const res = await POST(jsonReq({ question: "hi" }));
@@ -93,10 +121,12 @@ describe("POST /api/chat", () => {
     expect(await res.json()).toMatchObject({ error: "Retrieval failed", detail: expect.stringContaining("no key") });
   });
 
+  const docId = "5a4e1c9e-2f7b-4d3a-9c1e-8b6f0a2d4e71";
+
   it("streams NDJSON — citations first, then text deltas — scoped to the user", async () => {
-    const res = await POST(jsonReq({ question: "hi", documentId: "d1" }));
+    const res = await POST(jsonReq({ question: "hi", documentId: docId }));
     expect(retrieveChunks).toHaveBeenCalledWith("hi", "user-1", {
-      documentId: "d1",
+      documentId: docId,
       matchCount: 5,
     });
     expect(res.headers.get("content-type")).toContain("application/x-ndjson");

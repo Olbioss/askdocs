@@ -75,13 +75,18 @@ describe("DELETE /api/documents", () => {
     expect(deleteOwnedDocument).not.toHaveBeenCalled();
   });
 
-  it("removes storage object + row on success", async () => {
+  it("removes the row first (source of truth), then the storage object", async () => {
     getOwnedDocument.mockResolvedValue({ id: "d1", filePath: "user-1/x-a.pdf" });
     const res = await DELETE(delReq("d1"));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, id: "d1" });
     expect(remove).toHaveBeenCalledWith(["user-1/x-a.pdf"]);
     expect(deleteOwnedDocument).toHaveBeenCalledWith("d1", "user-1");
+    // DB delete must precede storage removal — a failed storage call may only
+    // orphan a file, never resurrect a deletable row.
+    expect(deleteOwnedDocument.mock.invocationCallOrder[0]).toBeLessThan(
+      remove.mock.invocationCallOrder[0],
+    );
   });
 
   it("logs storage error and still deletes the row (200)", async () => {
