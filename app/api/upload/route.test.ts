@@ -58,7 +58,9 @@ describe("POST /api/upload", () => {
 
   it("415 for legacy .doc", async () => {
     const doc = new File(["x"], "a.doc", { type: "application/msword" });
-    expect((await POST(reqWith(doc))).status).toBe(415);
+    const res = await POST(reqWith(doc));
+    expect(res.status).toBe(415);
+    expect(await res.json()).toMatchObject({ error: expect.stringContaining(".docx") });
   });
 
   it("415 for unsupported type", async () => {

@@ -22,6 +22,7 @@ export async function POST(req: Request) {
   const file = form.get("file");
   if (!(file instanceof File)) return jsonError("No file provided", 400);
 
+  // Friendly rejection for legacy .doc — MUST come before the SUPPORTED_MIMES allow-list below, or the bland "Unsupported type" 415 wins.
   if (file.type === "application/msword") {
     return jsonError(
       "Legacy .doc files aren't supported — please save as .docx or PDF and re-upload.",
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
   if (!SUPPORTED_MIMES.includes(file.type)) {
     return jsonError(`Unsupported type: ${file.type}`, 415);
   }
+  // Check size BEFORE reading the file into memory — File.size needs no read.
   if (file.size > MAX_BYTES) return jsonError("File too large (max 10MB)", 413);
 
   const buffer = await file.arrayBuffer();
@@ -43,6 +45,7 @@ export async function POST(req: Request) {
 
   const doc = await createDocument({ userId, filename: file.name, filePath });
 
+  // Ingestion is awaited for MVP simplicity; move to a background job once large files approach the serverless timeout.
   try {
     const { chunkCount } = await ingestDocument(doc.id, buffer, file.type);
     return NextResponse.json({

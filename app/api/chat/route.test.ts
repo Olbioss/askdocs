@@ -81,7 +81,7 @@ describe("POST /api/chat", () => {
     retrieveChunks.mockRejectedValue(new Error("no key"));
     const res = await POST(jsonReq({ question: "hi" }));
     expect(res.status).toBe(500);
-    expect(await res.json()).toMatchObject({ error: "Retrieval failed" });
+    expect(await res.json()).toMatchObject({ error: "Retrieval failed", detail: expect.stringContaining("no key") });
   });
 
   it("streams with citations header and scopes retrieval to the user", async () => {

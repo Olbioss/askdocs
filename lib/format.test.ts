@@ -27,6 +27,7 @@ describe("relativeTime", () => {
   it("minutes", () => expect(relativeTime(ago(5 * 60_000))).toBe("5m ago"));
   it("hours", () => expect(relativeTime(ago(2 * 3_600_000))).toBe("2h ago"));
   it("days", () => expect(relativeTime(ago(3 * 86_400_000))).toBe("3d ago"));
+  it("6 days still shows days", () => expect(relativeTime(ago(6 * 86_400_000))).toBe("6d ago"));
   it("absolute date beyond a week", () => {
     const iso = ago(30 * 86_400_000);
     const expected = new Date(iso).toLocaleDateString(undefined, {

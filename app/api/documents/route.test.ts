@@ -26,6 +26,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
   remove.mockResolvedValue({ error: null });
+  listDocumentsWithCounts.mockResolvedValue([]);
 });
 
 describe("GET /api/documents", () => {
@@ -80,6 +81,15 @@ describe("DELETE /api/documents", () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, id: "d1" });
     expect(remove).toHaveBeenCalledWith(["user-1/x-a.pdf"]);
+    expect(deleteOwnedDocument).toHaveBeenCalledWith("d1", "user-1");
+  });
+
+  it("logs storage error and still deletes the row (200)", async () => {
+    getOwnedDocument.mockResolvedValue({ id: "d1", filePath: "user-1/x-a.pdf" });
+    remove.mockResolvedValue({ error: { message: "boom" } });
+    const res = await DELETE(delReq("d1"));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, id: "d1" });
     expect(deleteOwnedDocument).toHaveBeenCalledWith("d1", "user-1");
   });
 });
