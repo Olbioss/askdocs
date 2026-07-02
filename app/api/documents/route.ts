@@ -13,7 +13,7 @@ export async function GET() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return jsonError("Unauthorized", 401);
+  if (!user) return jsonError("Oturum açmanız gerekiyor", 401);
 
   const rows = await listDocumentsWithCounts(user.id);
   const result: Document[] = rows.map((r) => ({
@@ -32,13 +32,13 @@ export async function DELETE(req: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return jsonError("Unauthorized", 401);
+  if (!user) return jsonError("Oturum açmanız gerekiyor", 401);
 
   const id = new URL(req.url).searchParams.get("id");
-  if (!id) return jsonError("Missing document id", 400);
+  if (!id) return jsonError("Belge kimliği eksik", 400);
 
   const doc = await getOwnedDocument(id, user.id);
-  if (!doc) return jsonError("Document not found", 404);
+  if (!doc) return jsonError("Belge bulunamadı", 404);
 
   // DB row first — it's the source of truth. A failed storage removal only
   // orphans a file (logged below); the reverse order could strand a row whose

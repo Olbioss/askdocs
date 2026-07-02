@@ -30,32 +30,33 @@ export async function POST(req: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return jsonError("Unauthorized", 401);
+  if (!user) return jsonError("Oturum açmanız gerekiyor", 401);
   const userId = user.id;
 
   if (!(await checkRateLimit(userId, "upload", UPLOADS_PER_HOUR, 3_600_000))) {
     return jsonError(
-      `Upload limit reached (${UPLOADS_PER_HOUR}/hour) — try again in a bit.`,
+      `Yükleme sınırına ulaşıldı (saatte ${UPLOADS_PER_HOUR}) — biraz sonra tekrar deneyin.`,
       429,
     );
   }
 
   const form = await req.formData();
   const file = form.get("file");
-  if (!(file instanceof File)) return jsonError("No file provided", 400);
+  if (!(file instanceof File)) return jsonError("Dosya seçilmedi", 400);
 
   // Friendly rejection for legacy .doc — MUST come before the SUPPORTED_MIMES allow-list below, or the bland "Unsupported type" 415 wins.
   if (file.type === "application/msword") {
     return jsonError(
-      "Legacy .doc files aren't supported — please save as .docx or PDF and re-upload.",
+      "Eski .doc biçimi desteklenmiyor — lütfen .docx veya PDF olarak kaydedip yeniden yükleyin.",
       415,
     );
   }
   if (!SUPPORTED_MIMES.includes(file.type)) {
-    return jsonError(`Unsupported type: ${file.type}`, 415);
+    return jsonError(`Desteklenmeyen dosya türü: ${file.type}`, 415);
   }
   // Check size BEFORE reading the file into memory — File.size needs no read.
-  if (file.size > MAX_BYTES) return jsonError("File too large (max 10MB)", 413);
+  if (file.size > MAX_BYTES)
+    return jsonError("Dosya çok büyük (en fazla 10 MB)", 413);
 
   const buffer = await file.arrayBuffer();
 
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
   const { error: upErr } = await supabase.storage
     .from("documents")
     .upload(filePath, buffer, { contentType: file.type });
-  if (upErr) return jsonError(`Storage failed: ${upErr.message}`, 500);
+  if (upErr) return jsonError(`Dosya depolanamadı: ${upErr.message}`, 500);
 
   let doc;
   try {
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
   } catch (err) {
     // don't orphan the stored object when no row references it
     await supabase.storage.from("documents").remove([filePath]);
-    return jsonError(`Could not record document: ${String(err)}`, 500);
+    return jsonError(`Belge kaydedilemedi: ${String(err)}`, 500);
   }
 
   // Ingestion is awaited for MVP simplicity; move to a background job once large files approach the serverless timeout.

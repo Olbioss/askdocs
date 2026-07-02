@@ -28,7 +28,7 @@ function messageFrom(body: Record<string, unknown>, fallback: string): string {
 export async function listDocuments(): Promise<Document[]> {
   const res = await fetch("/api/documents", { cache: "no-store" });
   if (!res.ok)
-    throw new Error(messageFrom(await errorBody(res), "Failed to load documents"));
+    throw new Error(messageFrom(await errorBody(res), "Belgeler yüklenemedi"));
   return (await res.json()) as Document[];
 }
 
@@ -38,7 +38,7 @@ export async function uploadDocument(file: File): Promise<Document> {
   const res = await fetch("/api/upload", { method: "POST", body: form });
   if (!res.ok) {
     const body = await errorBody(res);
-    const err = new UploadError(messageFrom(body, "Upload failed"));
+    const err = new UploadError(messageFrom(body, "Yükleme başarısız oldu"));
     if (typeof body.id === "string") err.documentId = body.id;
     if (body.status === "processing" || body.status === "ready" || body.status === "failed") {
       err.status = body.status;
@@ -52,7 +52,8 @@ export async function deleteDocument(id: string): Promise<void> {
   const res = await fetch(`/api/documents?id=${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
-  if (!res.ok) throw new Error(messageFrom(await errorBody(res), "Delete failed"));
+  if (!res.ok)
+    throw new Error(messageFrom(await errorBody(res), "Silme başarısız oldu"));
 }
 
 export async function* askQuestion(
@@ -66,8 +67,8 @@ export async function* askQuestion(
     signal,
   });
   if (!res.ok)
-    throw new Error(messageFrom(await errorBody(res), "Chat request failed"));
-  if (!res.body) throw new Error("Chat request failed");
+    throw new Error(messageFrom(await errorBody(res), "Sohbet isteği başarısız oldu"));
+  if (!res.body) throw new Error("Sohbet isteği başarısız oldu");
 
   // The route streams NDJSON ChatStreamEvent lines; reads can split a line
   // anywhere (including mid-codepoint), so buffer and emit per newline.

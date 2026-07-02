@@ -15,10 +15,14 @@ const QUESTIONS_PER_HOUR = 60;
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const ANSWER_IN_TURKISH =
+  "Always answer in Turkish (Türkçe), regardless of the language of the question or the documents.";
+
 export function buildSystemPrompt(chunks: RetrievedChunk[]): string {
   if (chunks.length === 0) {
     return [
       "You are AskDocs, a document assistant.",
+      ANSWER_IN_TURKISH,
       "No relevant context was found in the user's documents for this question.",
       "Tell the user you don't have information about that in their documents.",
       "Do not answer from outside knowledge or guess.",
@@ -37,6 +41,7 @@ export function buildSystemPrompt(chunks: RetrievedChunk[]): string {
     "ONLY the numbered context chunks below. If the answer is not in the context,",
     "say you don't have that information in their documents — do not guess or use",
     "outside knowledge.",
+    ANSWER_IN_TURKISH,
     "",
     "For every claim, cite the chunk it came from using its bracket number, e.g. [1].",
     "",
@@ -63,11 +68,11 @@ export async function POST(req: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return jsonError("Unauthorized", 401);
+  if (!user) return jsonError("Oturum açmanız gerekiyor", 401);
 
   if (!(await checkRateLimit(user.id, "chat", QUESTIONS_PER_HOUR, 3_600_000))) {
     return jsonError(
-      `Question limit reached (${QUESTIONS_PER_HOUR}/hour) — try again shortly.`,
+      `Soru sınırına ulaşıldı (saatte ${QUESTIONS_PER_HOUR}) — biraz sonra tekrar deneyin.`,
       429,
     );
   }
@@ -77,20 +82,20 @@ export async function POST(req: Request) {
   try {
     input = (await req.json()) as AskInput;
   } catch {
-    return jsonError("Invalid JSON body", 400);
+    return jsonError("Geçersiz istek gövdesi", 400);
   }
   const { question, documentId } = input;
   if (typeof question !== "string" || !question.trim()) {
-    return jsonError("No question provided", 400);
+    return jsonError("Soru girilmedi", 400);
   }
   if (question.length > MAX_QUESTION_CHARS) {
     return jsonError(
-      `Question too long (max ${MAX_QUESTION_CHARS} characters)`,
+      `Soru çok uzun (en fazla ${MAX_QUESTION_CHARS} karakter)`,
       400,
     );
   }
   if (documentId !== undefined && !UUID_RE.test(String(documentId))) {
-    return jsonError("Invalid documentId", 400);
+    return jsonError("Geçersiz belge kimliği", 400);
   }
 
   // 3. retrieve (scoped to this user, optional single-doc)
@@ -102,7 +107,7 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     // most likely the embedding call failed (e.g. missing GOOGLE_GENERATIVE_AI_API_KEY)
-    return jsonError("Retrieval failed", 500, { detail: String(err) });
+    return jsonError("Arama başarısız oldu", 500, { detail: String(err) });
   }
 
   // 4. stream NDJSON ChatStreamEvent lines: citations first (the UI can show
@@ -135,7 +140,7 @@ export async function POST(req: Request) {
         // via onError); don't enqueue after a client abort — the stream is dead.
         if (!req.signal.aborted) {
           controller.enqueue(
-            line({ type: "error", message: "Answer generation failed" }),
+            line({ type: "error", message: "Cevap oluşturulamadı" }),
           );
         }
       }
