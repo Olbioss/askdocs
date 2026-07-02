@@ -43,7 +43,7 @@ export function AuthForm({
   const callbackUrl = (origin: string) =>
     `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`;
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (pending) return;
     setError(null);
@@ -91,11 +91,11 @@ export function AuthForm({
     }
   }
 
-  async function handleGoogle() {
+  async function handleOAuth(provider: "google" | "github") {
     if (pending) return;
     setError(null);
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider,
       options: { redirectTo: callbackUrl(window.location.origin) },
     });
     if (error) setError(error.message);
@@ -112,12 +112,7 @@ export function AuthForm({
           We sent a confirmation link to finish creating your account. Open it
           and you&rsquo;ll be signed in automatically.
         </p>
-        <Button
-          asChild
-          variant="outline"
-          size="lg"
-          className="mt-6 w-full"
-        >
+        <Button asChild variant="outline" size="lg" className="mt-6 w-full">
           <Link href="/login">Back to sign in</Link>
         </Button>
       </div>
@@ -190,16 +185,28 @@ export function AuthForm({
         <span className="h-px flex-1 bg-rule" />
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        size="lg"
-        className="w-full"
-        onClick={handleGoogle}
-        disabled={pending}
-      >
-        Continue with Google
-      </Button>
+      <div className="space-y-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="w-full"
+          onClick={() => handleOAuth("google")}
+          disabled={pending}
+        >
+          Continue with Google
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="w-full"
+          onClick={() => handleOAuth("github")}
+          disabled={pending}
+        >
+          Continue with GitHub
+        </Button>
+      </div>
 
       <p className="label mt-6 text-center text-ink-60">
         {isSignup ? (
