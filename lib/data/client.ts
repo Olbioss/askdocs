@@ -3,7 +3,6 @@
 import type {
   AskInput,
   ChatStreamEvent,
-  Citation,
   Document,
   DocumentStatus,
 } from "@/lib/types";
@@ -58,32 +57,45 @@ export async function deleteDocument(id: string): Promise<void> {
 
 export async function* askQuestion(
   input: AskInput,
+  signal?: AbortSignal,
 ): AsyncGenerator<ChatStreamEvent> {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(input),
+    signal,
   });
   if (!res.ok)
     throw new Error(messageFrom(await errorBody(res), "Chat request failed"));
   if (!res.body) throw new Error("Chat request failed");
 
+  // The route streams NDJSON ChatStreamEvent lines; reads can split a line
+  // anywhere (including mid-codepoint), so buffer and emit per newline.
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
+  let buffer = "";
+
+  function* drain(): Generator<ChatStreamEvent> {
+    let nl: number;
+    while ((nl = buffer.indexOf("\n")) !== -1) {
+      const raw = buffer.slice(0, nl).trim();
+      buffer = buffer.slice(nl + 1);
+      if (!raw) continue;
+      try {
+        yield JSON.parse(raw) as ChatStreamEvent;
+      } catch {
+        // skip malformed lines
+      }
+    }
+  }
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
-    const chunk = decoder.decode(value, { stream: true });
-    if (chunk) yield { type: "text", value: chunk };
+    buffer += decoder.decode(value, { stream: true });
+    yield* drain();
   }
-
-  const encoded = res.headers.get("x-citations");
-  if (encoded) {
-    try {
-      const citations = JSON.parse(atob(encoded)) as Citation[];
-      yield { type: "citations", value: citations };
-    } catch {
-      // ignore malformed citation payloads
-    }
-  }
+  buffer += decoder.decode(); // flush any multi-byte remainder
+  buffer += "\n"; // treat a final partial line as complete
+  yield* drain();
 }

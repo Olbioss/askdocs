@@ -7,14 +7,8 @@ vi.mock("@/lib/supabase/server", () => ({
 const retrieveChunks = vi.fn();
 vi.mock("@/lib/rag/retrieve", () => ({ retrieveChunks: (...a: unknown[]) => retrieveChunks(...a) }));
 vi.mock("@ai-sdk/google", () => ({ google: () => ({ id: "gemini-2.5-flash" }) }));
-vi.mock("ai", () => ({
-  streamText: vi.fn(() => ({ stream: {} })),
-  toTextStream: vi.fn(() => ({})),
-  createTextStreamResponse: vi.fn(
-    ({ headers }: { headers: Record<string, string> }) =>
-      new Response("streamed", { headers }),
-  ),
-}));
+const streamText = vi.fn();
+vi.mock("ai", () => ({ streamText: (...a: unknown[]) => streamText(...a) }));
 
 import { POST, buildSystemPrompt, toCitations } from "@/app/api/chat/route";
 import type { RetrievedChunk } from "@/lib/rag/retrieve";
@@ -31,12 +25,27 @@ const chunk = (over: Partial<RetrievedChunk> = {}): RetrievedChunk => ({
 });
 
 const jsonReq = (body: unknown) =>
-  ({ json: async () => body } as unknown as Request);
+  ({
+    json: async () => body,
+    signal: new AbortController().signal,
+  } as unknown as Request);
+
+const ndjson = async (res: Response) =>
+  (await res.text())
+    .trim()
+    .split("\n")
+    .map((l) => JSON.parse(l));
 
 beforeEach(() => {
   vi.clearAllMocks();
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
   retrieveChunks.mockResolvedValue([chunk()]);
+  streamText.mockReturnValue({
+    textStream: (async function* () {
+      yield "Hello ";
+      yield "world";
+    })(),
+  });
 });
 
 describe("buildSystemPrompt", () => {
@@ -84,14 +93,41 @@ describe("POST /api/chat", () => {
     expect(await res.json()).toMatchObject({ error: "Retrieval failed", detail: expect.stringContaining("no key") });
   });
 
-  it("streams with citations header and scopes retrieval to the user", async () => {
+  it("streams NDJSON — citations first, then text deltas — scoped to the user", async () => {
     const res = await POST(jsonReq({ question: "hi", documentId: "d1" }));
     expect(retrieveChunks).toHaveBeenCalledWith("hi", "user-1", {
       documentId: "d1",
       matchCount: 5,
     });
-    const header = res.headers.get("x-citations");
-    expect(header).toBeTruthy();
-    expect(JSON.parse(atob(header!))).toEqual(toCitations([chunk()]));
+    expect(res.headers.get("content-type")).toContain("application/x-ndjson");
+    const lines = await ndjson(res);
+    expect(lines[0]).toEqual({
+      type: "citations",
+      value: toCitations([chunk()]),
+    });
+    expect(lines.slice(1)).toEqual([
+      { type: "text", value: "Hello " },
+      { type: "text", value: "world" },
+    ]);
+  });
+
+  it("emits an error event when the model fails mid-stream", async () => {
+    streamText.mockReturnValue({
+      textStream: (async function* () {
+        yield "partial";
+        throw new Error("model exploded");
+      })(),
+    });
+    const lines = await ndjson(await POST(jsonReq({ question: "hi" })));
+    expect(lines[1]).toEqual({ type: "text", value: "partial" });
+    expect(lines[2]).toEqual({ type: "error", message: expect.any(String) });
+  });
+
+  it("passes the request's abort signal to generation", async () => {
+    const req = jsonReq({ question: "hi" });
+    await (await POST(req)).text();
+    expect(streamText).toHaveBeenCalledWith(
+      expect.objectContaining({ abortSignal: req.signal }),
+    );
   });
 });

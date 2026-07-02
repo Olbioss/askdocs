@@ -68,7 +68,7 @@ export function ChatView({
               m.id === answerId ? { ...m, content: m.content + ev.value } : m,
             ),
           );
-        } else {
+        } else if (ev.type === "citations") {
           const citations = ev.value;
           setMessages((prev) =>
             prev.map((m) =>
@@ -77,6 +77,9 @@ export function ChatView({
           );
           setPanel({ citations });
           setPanelOpen(true);
+        } else {
+          // mid-stream generation failure — funnel into the catch path below
+          throw new Error(ev.message);
         }
       }
     } catch (err) {

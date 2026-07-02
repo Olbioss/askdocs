@@ -77,9 +77,51 @@ describe("deleteDocument", () => {
 });
 
 describe("askQuestion", () => {
+  function streamRes(chunks: string[]) {
+    const encoder = new TextEncoder();
+    const body = new ReadableStream<Uint8Array>({
+      start(c) {
+        for (const ch of chunks) c.enqueue(encoder.encode(ch));
+        c.close();
+      },
+    });
+    return new Response(body, {
+      status: 200,
+      headers: { "content-type": "application/x-ndjson" },
+    });
+  }
+
   it("throws the server's error message on a non-ok response", async () => {
     stubFetch(jsonRes({ error: "Retrieval failed" }, 500));
     const gen = askQuestion({ question: "hi" });
     await expect(gen.next()).rejects.toThrow("Retrieval failed");
+  });
+
+  it("parses NDJSON events, buffering partial lines across reads", async () => {
+    stubFetch(
+      streamRes([
+        '{"type":"citations","value":[]}\n{"type":"te',
+        'xt","value":"Hel',
+        'lo"}\n',
+        '{"type":"text","value":"!"}', // no trailing newline — must still flush
+      ]),
+    );
+    const events = [];
+    for await (const ev of askQuestion({ question: "hi" })) events.push(ev);
+    expect(events).toEqual([
+      { type: "citations", value: [] },
+      { type: "text", value: "Hello" },
+      { type: "text", value: "!" },
+    ]);
+  });
+
+  it("passes an abort signal through to fetch", async () => {
+    const fn = stubFetch(streamRes(['{"type":"text","value":"x"}\n']));
+    const ac = new AbortController();
+    for await (const ev of askQuestion({ question: "hi" }, ac.signal)) void ev;
+    expect(fn).toHaveBeenCalledWith(
+      "/api/chat",
+      expect.objectContaining({ signal: ac.signal }),
+    );
   });
 });

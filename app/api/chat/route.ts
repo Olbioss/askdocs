@@ -1,9 +1,9 @@
 // retrieve → generate → stream
 import { google } from "@ai-sdk/google";
-import { streamText, createTextStreamResponse, toTextStream } from "ai";
+import { streamText } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { retrieveChunks, type RetrievedChunk } from "@/lib/rag/retrieve";
-import { AskInput, Citation } from "@/lib/types";
+import { AskInput, ChatStreamEvent, Citation } from "@/lib/types";
 import { jsonError } from "@/lib/http";
 
 // Allow streaming responses up to 30s (raise on Pro if needed).
@@ -77,20 +77,48 @@ export async function POST(req: Request) {
     return jsonError("Retrieval failed", 500, { detail: String(err) });
   }
 
-  // 4. stream plain text; ship citations in an x-citations header (base64 JSON) as metadata for the UI
+  // 4. stream NDJSON ChatStreamEvent lines: citations first (the UI can show
+  // sources before the first token), then text deltas, an error event on failure.
+  // Body transport avoids the old x-citations header's 16KB size ceiling and
+  // base64/atob UTF-8 mangling.
   const result = streamText({
     model: google("gemini-2.5-flash"),
     system: buildSystemPrompt(retrieved),
     prompt: question,
+    abortSignal: req.signal, // client abort / disconnect stops generation
     onError: ({ error }) => console.error("chat streamText error:", error),
   });
 
-  const citationsB64 = Buffer.from(
-    JSON.stringify(toCitations(retrieved)),
-  ).toString("base64");
+  const encoder = new TextEncoder();
+  const line = (ev: ChatStreamEvent) =>
+    encoder.encode(JSON.stringify(ev) + "\n");
 
-  return createTextStreamResponse({
-    stream: toTextStream({ stream: result.stream }),
-    headers: { "x-citations": citationsB64 },
+  const body = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      controller.enqueue(
+        line({ type: "citations", value: toCitations(retrieved) }),
+      );
+      try {
+        for await (const text of result.textStream) {
+          controller.enqueue(line({ type: "text", value: text }));
+        }
+      } catch {
+        // textStream throws on mid-stream model/network errors (already logged
+        // via onError); don't enqueue after a client abort — the stream is dead.
+        if (!req.signal.aborted) {
+          controller.enqueue(
+            line({ type: "error", message: "Answer generation failed" }),
+          );
+        }
+      }
+      controller.close();
+    },
+  });
+
+  return new Response(body, {
+    headers: {
+      "content-type": "application/x-ndjson; charset=utf-8",
+      "cache-control": "no-store",
+    },
   });
 }

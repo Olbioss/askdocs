@@ -41,10 +41,14 @@ export interface ChatMessage {
   createdAt: string;
 }
 
-/** Streamed from askQuestion(): text deltas first, a citations payload last. */
+/**
+ * Streamed from askQuestion() as NDJSON lines: a citations payload first,
+ * then text deltas; an error event if generation fails mid-stream.
+ */
 export type ChatStreamEvent =
   | { type: "text"; value: string }
-  | { type: "citations"; value: Citation[] };
+  | { type: "citations"; value: Citation[] }
+  | { type: "error"; message: string };
 
 export interface AskInput {
   question: string;
