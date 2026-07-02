@@ -1,0 +1,104 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+const getUser = vi.fn();
+const upload = vi.fn();
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    auth: { getUser },
+    storage: { from: () => ({ upload }) },
+  }),
+}));
+vi.mock("@/lib/ai/extract", () => ({
+  SUPPORTED_MIMES: [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain",
+    "text/markdown",
+  ],
+}));
+const createDocument = vi.fn();
+vi.mock("@/lib/db/documents", () => ({ createDocument: (i: unknown) => createDocument(i) }));
+const ingestDocument = vi.fn();
+vi.mock("@/lib/rag/ingest", () => ({ ingestDocument: (...a: unknown[]) => ingestDocument(...a) }));
+
+import { POST } from "@/app/api/upload/route";
+
+function reqWith(file: unknown) {
+  const form = new FormData();
+  if (file) form.append("file", file as Blob);
+  return { formData: async () => form } as unknown as Request;
+}
+const pdf = (name = "a.pdf") =>
+  new File([new Uint8Array([1, 2, 3])], name, { type: "application/pdf" });
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
+  upload.mockResolvedValue({ error: null });
+  createDocument.mockResolvedValue({
+    id: "doc-1",
+    filename: "a.pdf",
+    filePath: "user-1/uuid-a.pdf",
+    status: "processing",
+    createdAt: new Date("2026-07-01T00:00:00.000Z"),
+    userId: "user-1",
+  });
+  ingestDocument.mockResolvedValue({ chunkCount: 12 });
+});
+
+describe("POST /api/upload", () => {
+  it("401 when signed out", async () => {
+    getUser.mockResolvedValue({ data: { user: null } });
+    expect((await POST(reqWith(pdf()))).status).toBe(401);
+  });
+
+  it("400 when no file", async () => {
+    expect((await POST(reqWith(null))).status).toBe(400);
+  });
+
+  it("415 for legacy .doc", async () => {
+    const doc = new File(["x"], "a.doc", { type: "application/msword" });
+    expect((await POST(reqWith(doc))).status).toBe(415);
+  });
+
+  it("415 for unsupported type", async () => {
+    const png = new File(["x"], "a.png", { type: "image/png" });
+    expect((await POST(reqWith(png))).status).toBe(415);
+  });
+
+  it("413 when over 10MB", async () => {
+    const big = pdf("big.pdf");
+    Object.defineProperty(big, "size", { value: 11 * 1024 * 1024 });
+    expect((await POST(reqWith(big))).status).toBe(413);
+  });
+
+  it("happy path returns the indexed document", async () => {
+    const res = await POST(reqWith(pdf()));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      id: "doc-1",
+      filename: "a.pdf",
+      createdAt: "2026-07-01T00:00:00.000Z",
+      status: "ready",
+      chunkCount: 12,
+    });
+    expect(createDocument).toHaveBeenCalledWith({
+      userId: "user-1",
+      filename: "a.pdf",
+      filePath: expect.stringMatching(/^user-1\//),
+    });
+    expect(ingestDocument).toHaveBeenCalledWith("doc-1", expect.anything(), "application/pdf");
+  });
+
+  it("500 when storage upload fails", async () => {
+    upload.mockResolvedValue({ error: { message: "boom" } });
+    expect((await POST(reqWith(pdf()))).status).toBe(500);
+  });
+
+  it("500 with failed status when ingestion throws", async () => {
+    ingestDocument.mockRejectedValue(new Error("bad"));
+    const res = await POST(reqWith(pdf()));
+    expect(res.status).toBe(500);
+    expect(await res.json()).toMatchObject({ id: "doc-1", status: "failed" });
+  });
+});
