@@ -1,9 +1,12 @@
 import { SUPPORTED_MIMES } from "@/lib/ai/extract";
 import { createDocument } from "@/lib/db/documents";
 import { ingestDocument } from "@/lib/rag/ingest";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { jsonError } from "@/lib/http";
 import { NextResponse } from "next/server";
+
+const UPLOADS_PER_HOUR = 20;
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
@@ -29,6 +32,13 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) return jsonError("Unauthorized", 401);
   const userId = user.id;
+
+  if (!(await checkRateLimit(userId, "upload", UPLOADS_PER_HOUR, 3_600_000))) {
+    return jsonError(
+      `Upload limit reached (${UPLOADS_PER_HOUR}/hour) — try again in a bit.`,
+      429,
+    );
+  }
 
   const form = await req.formData();
   const file = form.get("file");

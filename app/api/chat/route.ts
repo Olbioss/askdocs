@@ -3,6 +3,7 @@ import { google } from "@ai-sdk/google";
 import { streamText } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { retrieveChunks, type RetrievedChunk } from "@/lib/rag/retrieve";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { AskInput, ChatStreamEvent, Citation } from "@/lib/types";
 import { jsonError } from "@/lib/http";
 
@@ -10,6 +11,7 @@ import { jsonError } from "@/lib/http";
 export const maxDuration = 30;
 
 const MAX_QUESTION_CHARS = 4000;
+const QUESTIONS_PER_HOUR = 60;
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -62,6 +64,13 @@ export async function POST(req: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return jsonError("Unauthorized", 401);
+
+  if (!(await checkRateLimit(user.id, "chat", QUESTIONS_PER_HOUR, 3_600_000))) {
+    return jsonError(
+      `Question limit reached (${QUESTIONS_PER_HOUR}/hour) — try again shortly.`,
+      429,
+    );
+  }
 
   // 2. parse + validate the AskInput contract your client sends
   let input: AskInput;

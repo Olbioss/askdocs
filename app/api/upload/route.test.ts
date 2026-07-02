@@ -21,6 +21,8 @@ const createDocument = vi.fn();
 vi.mock("@/lib/db/documents", () => ({ createDocument: (i: unknown) => createDocument(i) }));
 const ingestDocument = vi.fn();
 vi.mock("@/lib/rag/ingest", () => ({ ingestDocument: (...a: unknown[]) => ingestDocument(...a) }));
+const checkRateLimit = vi.fn();
+vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: (...a: unknown[]) => checkRateLimit(...a) }));
 
 import { POST } from "@/app/api/upload/route";
 
@@ -37,6 +39,7 @@ beforeEach(() => {
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
   upload.mockResolvedValue({ error: null });
   remove.mockResolvedValue({ error: null });
+  checkRateLimit.mockResolvedValue(true);
   createDocument.mockResolvedValue({
     id: "doc-1",
     filename: "a.pdf",
@@ -56,6 +59,13 @@ describe("POST /api/upload", () => {
 
   it("400 when no file", async () => {
     expect((await POST(reqWith(null))).status).toBe(400);
+  });
+
+  it("429 when over the upload rate limit, before touching storage", async () => {
+    checkRateLimit.mockResolvedValue(false);
+    const res = await POST(reqWith(pdf()));
+    expect(res.status).toBe(429);
+    expect(upload).not.toHaveBeenCalled();
   });
 
   it("415 for legacy .doc", async () => {

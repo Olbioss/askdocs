@@ -1,9 +1,11 @@
 import { sql } from "drizzle-orm";
 import {
   index,
+  integer,
   jsonb,
   pgPolicy,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -49,6 +51,23 @@ export const documents = pgTable(
       to: authenticatedRole,
       using: sql`(select auth.uid()) = ${table.userId}`,
     }),
+  ],
+);
+
+// Fixed-window rate-limit counters (see lib/rate-limit.ts). Backend-only:
+// RLS is auto-enabled with no policies, so the Data API can't touch it.
+export const rateLimits = pgTable(
+  "rate_limits",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "cascade" }),
+    bucket: text("bucket").notNull(),
+    windowStart: timestamp("window_start", { withTimezone: true }).notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.bucket, table.windowStart] }),
   ],
 );
 

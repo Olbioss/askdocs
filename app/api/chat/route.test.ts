@@ -6,6 +6,8 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 const retrieveChunks = vi.fn();
 vi.mock("@/lib/rag/retrieve", () => ({ retrieveChunks: (...a: unknown[]) => retrieveChunks(...a) }));
+const checkRateLimit = vi.fn();
+vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: (...a: unknown[]) => checkRateLimit(...a) }));
 vi.mock("@ai-sdk/google", () => ({ google: () => ({ id: "gemini-2.5-flash" }) }));
 const streamText = vi.fn();
 vi.mock("ai", () => ({ streamText: (...a: unknown[]) => streamText(...a) }));
@@ -40,6 +42,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
   retrieveChunks.mockResolvedValue([chunk()]);
+  checkRateLimit.mockResolvedValue(true);
   streamText.mockReturnValue({
     textStream: (async function* () {
       yield "Hello ";
@@ -111,6 +114,13 @@ describe("POST /api/chat", () => {
   it("400 when documentId is not a UUID", async () => {
     const res = await POST(jsonReq({ question: "hi", documentId: "not-a-uuid" }));
     expect(res.status).toBe(400);
+    expect(retrieveChunks).not.toHaveBeenCalled();
+  });
+
+  it("429 when over the chat rate limit, before any retrieval", async () => {
+    checkRateLimit.mockResolvedValue(false);
+    const res = await POST(jsonReq({ question: "hi" }));
+    expect(res.status).toBe(429);
     expect(retrieveChunks).not.toHaveBeenCalled();
   });
 
