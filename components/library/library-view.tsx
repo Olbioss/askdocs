@@ -28,43 +28,34 @@ export function LibraryView() {
 
   function handleUpload(files: File[]) {
     files.forEach(async (file) => {
+      // Optimistic "processing" row while the server extracts → embeds → stores.
+      // The real /api/upload awaits ingestion and returns the finished document.
+      const tempId = `temp_${crypto.randomUUID()}`;
+      setDocs((prev) => [
+        {
+          id: tempId,
+          filename: file.name,
+          status: "processing",
+          createdAt: new Date().toISOString(),
+          size: file.size,
+        },
+        ...(prev ?? []),
+      ]);
+
       try {
         const doc = await uploadDocument(file);
-        setDocs((prev) => [doc, ...(prev ?? [])]);
-        toast(`Uploading ${file.name}`, {
-          description: "Extracting text, chunking and embedding…",
-        });
-
-        // Simulate the ingest pipeline finishing (mock backend has no worker).
-        window.setTimeout(
-          () => {
-            setDocs((prev) =>
-              prev
-                ? prev.map((d) =>
-                    d.id === doc.id
-                      ? {
-                          ...d,
-                          status: "ready",
-                          pages: Math.max(
-                            1,
-                            Math.round((d.size ?? 60_000) / 24_000),
-                          ),
-                          chunkCount: Math.max(
-                            4,
-                            Math.round((d.size ?? 60_000) / 2_600),
-                          ),
-                        }
-                      : d,
-                  )
-                : prev,
-            );
-            toast.success(`${file.name} indexed`, {
-              description: "Ready to query in chat.",
-            });
-          },
-          2600 + Math.random() * 1400,
+        setDocs((prev) =>
+          (prev ?? []).map((d) => (d.id === tempId ? doc : d)),
         );
+        toast.success(`${file.name} indexed`, {
+          description: "Ready to query in chat.",
+        });
       } catch {
+        setDocs((prev) =>
+          (prev ?? []).map((d) =>
+            d.id === tempId ? { ...d, status: "failed" } : d,
+          ),
+        );
         toast.error(`Couldn't upload ${file.name}`);
       }
     });

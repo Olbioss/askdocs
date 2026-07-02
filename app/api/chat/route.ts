@@ -1,18 +1,9 @@
 // retrieve → generate → stream
 import { google } from "@ai-sdk/google";
-import {
-  streamText,
-  convertToModelMessages,
-  type UIMessage,
-  createUIMessageStreamResponse,
-  toUIMessageStream,
-} from "ai";
+import { streamText, createTextStreamResponse, toTextStream } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { retrieveChunks, type RetrievedChunk } from "@/lib/rag/retrieve";
-// Stub: not implemented yet. The frontend talks to this through
-// lib/data/client.ts, which currently runs on mocks (USE_MOCKS).
-// Implement the RAG pipeline here (embed query → retrieveChunks → Gemini stream)
-// and flip USE_MOCKS to false to go live.
+import { AskInput, Citation } from "@/lib/types";
 
 // Allow streaming responses up to 30s (raise on Pro if needed).
 export const maxDuration = 30;
@@ -47,6 +38,18 @@ function buildSystemPrompt(chunks: RetrievedChunk[]): string {
   ].join("\n");
 }
 
+function toCitations(chunks: RetrievedChunk[]): Citation[] {
+  return chunks.map((c, i) => ({
+    id: c.id,
+    documentId: c.documentId,
+    documentName: c.filename,
+    content: c.content,
+    similarity: Number(c.similarity.toFixed(3)),
+    metadata: c.page ? { page: c.page } : undefined,
+    // marker index [i+1] matches the [n] used in the answer text
+  }));
+}
+
 export async function POST(req: Request) {
   // 1. auth — identity from the server-verified session
   const supabase = await createClient();
@@ -60,51 +63,44 @@ export async function POST(req: Request) {
     });
   }
 
-  // 2. parse request — messages from useChat, optional documentId scope
-  const {
-    messages,
-    documentId,
-  }: { messages: UIMessage[]; documentId?: string } = await req.json();
+  // 2. parse the AskInput contract your client sends
+  const { question, documentId }: AskInput = await req.json();
+  if (!question?.trim()) {
+    return new Response(JSON.stringify({ error: "No question provided" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
-  // last user message text = the question to retrieve against
-  const last = messages[messages.length - 1];
-  const question =
-    last?.parts
-      ?.filter((p) => p.type === "text")
-      .map((p) => (p as { text: string }).text)
-      .join(" ") ?? "";
+  // 3. retrieve (scoped to this user, optional single-doc)
+  let retrieved: RetrievedChunk[];
+  try {
+    retrieved = await retrieveChunks(question, user.id, {
+      documentId,
+      matchCount: 5,
+    });
+  } catch (err) {
+    // most likely the embedding call failed (e.g. missing GOOGLE_GENERATIVE_AI_API_KEY)
+    return Response.json(
+      { error: "Retrieval failed", detail: String(err) },
+      { status: 500 },
+    );
+  }
 
-  // 3. retrieve relevant chunks (scoped to this user)
-  const retrieved = await retrieveChunks(question, user.id, {
-    documentId,
-    matchCount: 5,
-  });
-
-  // 4. stream a grounded answer; attach sources as metadata for the UI
+  // 4. stream plain text; ship citations in an x-citations header (base64 JSON) as metadata for the UI
   const result = streamText({
     model: google("gemini-2.5-flash"),
     system: buildSystemPrompt(retrieved),
-    messages: await convertToModelMessages(messages),
+    prompt: question,
+    onError: ({ error }) => console.error("chat streamText error:", error),
   });
 
-  return createUIMessageStreamResponse({
-    stream: toUIMessageStream({
-      stream: result.stream,
-      messageMetadata: ({ part }) => {
-        // send the citation sources once, at the start of the response
-        if (part.type === "start") {
-          return {
-            sources: retrieved.map((c, i) => ({
-              n: i + 1,
-              documentId: c.documentId,
-              filename: c.filename,
-              page: c.page,
-              chunkIndex: c.chunkIndex,
-              similarity: Number(c.similarity.toFixed(3)),
-            })),
-          };
-        }
-      },
-    }),
+  const citations864 = Buffer.from(
+    JSON.stringify(toCitations(retrieved)),
+  ).toString("base64");
+
+  return createTextStreamResponse({
+    stream: toTextStream({ stream: result.stream }),
+    headers: { "x-citations": citations864 },
   });
 }

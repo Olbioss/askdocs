@@ -1,7 +1,5 @@
 // ingest: extract → chunk → embed → store
-//
-// Stub: not implemented yet. See lib/rag/ingest.ts for the intended pipeline.
-// The frontend reaches this via lib/data/client.ts (currently mocked).
+// Auth → store original in Supabase Storage → create documents row → ingestDocument.
 
 import { SUPPORTED_MIMES } from "@/lib/ai/extract";
 import { db } from "@/lib/db";
@@ -12,6 +10,9 @@ import { NextResponse } from "next/server";
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
+// Ingestion runs inline (extract → embed → store), so give large files headroom.
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   const supabase = await createClient();
   const {
@@ -19,6 +20,7 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const userId = user.id;
 
   const form = await req.formData();
@@ -76,7 +78,13 @@ export async function POST(req: Request) {
   //    once large files start hitting the serverless execution timeout)
   try {
     const { chunkCount } = await ingestDocument(doc.id, buffer, file.type);
-    return NextResponse.json({ id: doc.id, status: "ready", chunkCount });
+    return NextResponse.json({
+      id: doc.id,
+      filename: doc.filename,
+      createdAt: (doc.createdAt ?? new Date()).toISOString(),
+      status: "ready",
+      chunkCount,
+    });
   } catch (err) {
     return NextResponse.json(
       { id: doc.id, status: "failed", error: String(err) },

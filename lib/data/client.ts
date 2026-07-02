@@ -10,7 +10,7 @@ import type {
 } from "@/lib/types";
 import * as mocks from "./mocks";
 
-export const USE_MOCKS = true;
+export const USE_MOCKS = false;
 
 export async function listDocuments(): Promise<Document[]> {
   if (USE_MOCKS) return mocks.listDocuments();
