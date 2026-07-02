@@ -40,14 +40,14 @@ export function buildSystemPrompt(chunks: RetrievedChunk[]): string {
 }
 
 export function toCitations(chunks: RetrievedChunk[]): Citation[] {
-  return chunks.map((c, i) => ({
+  // Array order defines the marker index: citation n backs the [n] in the answer text.
+  return chunks.map((c) => ({
     id: c.id,
     documentId: c.documentId,
     documentName: c.filename,
     content: c.content,
     similarity: Number(c.similarity.toFixed(3)),
     metadata: c.page ? { page: c.page } : undefined,
-    // marker index [i+1] matches the [n] used in the answer text
   }));
 }
 
@@ -57,9 +57,7 @@ export async function POST(req: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
-    return jsonError("Unauthorized", 401);
-  }
+  if (!user) return jsonError("Unauthorized", 401);
 
   // 2. parse the AskInput contract your client sends
   const { question, documentId }: AskInput = await req.json();

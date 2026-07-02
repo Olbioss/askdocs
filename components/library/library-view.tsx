@@ -10,6 +10,7 @@ import {
   deleteDocument,
   listDocuments,
   uploadDocument,
+  UploadError,
 } from "@/lib/data/client";
 import type { Document } from "@/lib/types";
 
@@ -20,7 +21,13 @@ export function LibraryView() {
     let alive = true;
     listDocuments()
       .then((d) => alive && setDocs(d))
-      .catch(() => alive && setDocs([]));
+      .catch((err: unknown) => {
+        if (!alive) return;
+        setDocs([]);
+        toast.error("Couldn't load documents", {
+          description: err instanceof Error ? err.message : undefined,
+        });
+      });
     return () => {
       alive = false;
     };
@@ -50,13 +57,21 @@ export function LibraryView() {
         toast.success(`${file.name} indexed`, {
           description: "Ready to query in chat.",
         });
-      } catch {
+      } catch (err) {
+        // Ingestion failures leave a real row behind (status "failed") — adopt its
+        // id so the visible card can actually be deleted.
+        const realId =
+          err instanceof UploadError && err.documentId ? err.documentId : null;
         setDocs((prev) =>
           (prev ?? []).map((d) =>
-            d.id === tempId ? { ...d, status: "failed" } : d,
+            d.id === tempId
+              ? { ...d, id: realId ?? tempId, status: "failed" }
+              : d,
           ),
         );
-        toast.error(`Couldn't upload ${file.name}`);
+        toast.error(`Couldn't upload ${file.name}`, {
+          description: err instanceof Error ? err.message : undefined,
+        });
       }
     });
   }
@@ -67,8 +82,10 @@ export function LibraryView() {
     try {
       await deleteDocument(id);
       toast.success(`Deleted ${removed?.filename ?? "document"}`);
-    } catch {
-      toast.error("Delete failed");
+    } catch (err) {
+      toast.error("Delete failed", {
+        description: err instanceof Error ? err.message : undefined,
+      });
       if (removed) setDocs((prev) => [removed, ...(prev ?? [])]);
     }
   }

@@ -12,5 +12,6 @@ export default async function ChatPage({
 }) {
   const sp = await searchParams;
   const doc = Array.isArray(sp.doc) ? sp.doc[0] : sp.doc;
-  return <ChatView initialDocumentId={doc} />;
+  // Key by the doc param so navigating with a new ?doc= remounts with the right scope.
+  return <ChatView key={doc ?? "all"} initialDocumentId={doc} />;
 }

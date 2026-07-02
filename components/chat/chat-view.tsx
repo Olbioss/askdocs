@@ -37,10 +37,6 @@ export function ChatView({
       .catch(() => {});
   }, []);
 
-  React.useEffect(() => {
-    if (initialDocumentId) setScope(initialDocumentId);
-  }, [initialDocumentId]);
-
   async function send(question: string) {
     if (streamingId) return;
     const stamp = Date.now();
@@ -83,7 +79,7 @@ export function ChatView({
           setPanelOpen(true);
         }
       }
-    } catch {
+    } catch (err) {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === answerId
@@ -96,7 +92,9 @@ export function ChatView({
             : m,
         ),
       );
-      toast.error("Couldn't complete that answer");
+      toast.error("Couldn't complete that answer", {
+        description: err instanceof Error ? err.message : undefined,
+      });
     } finally {
       setMessages((prev) =>
         prev.map((m) => (m.id === answerId ? { ...m, pending: false } : m)),
