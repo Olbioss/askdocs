@@ -201,6 +201,7 @@ export function ChatView({
                 size="sm"
                 onClick={() => setPanelOpen((o) => !o)}
                 className="h-8 gap-1.5"
+                aria-label={`Toggle sources panel (${sourceCount})`}
               >
                 <PanelRight className="size-3.5" />
                 <span className="hidden sm:inline">Sources</span> {sourceCount}

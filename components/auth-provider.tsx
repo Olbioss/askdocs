@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 
 export interface AuthUser {
@@ -49,6 +50,7 @@ export function AuthProvider({
   const signOut = React.useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
+    toast.success("Signed out");
     router.push("/login");
     router.refresh();
   }, [supabase, router]);

@@ -75,7 +75,11 @@ export function ChatMessage({
       ) : (
         <div className="reading max-w-[68ch] text-ink">
           {streaming && message.content === "" ? (
-            <span className="label inline-flex items-center gap-2 text-ink-60">
+            <span
+              role="status"
+              aria-live="polite"
+              className="label inline-flex items-center gap-2 text-ink-60"
+            >
               <span className="size-2 animate-pulse bg-accent" />
               Searching sources…
             </span>

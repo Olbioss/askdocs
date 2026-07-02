@@ -163,6 +163,9 @@ export function AuthForm({
             minLength={isSignup ? 6 : undefined}
             required
           />
+          {isSignup && (
+            <p className="label mt-1.5 text-ink-40">At least 6 characters</p>
+          )}
         </Field>
         <Button
           type="submit"
