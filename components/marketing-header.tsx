@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/supabase/actions";
@@ -14,6 +15,7 @@ export async function MarketingHeader() {
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-5 sm:px-8">
         <Logo />
         <nav className="flex items-center gap-2">
+          <ThemeToggle className="size-8" />
           {isAuthed ? (
             <>
               <form action={signOut}>

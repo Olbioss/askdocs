@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FileText, MessagesSquare, User } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/components/auth-provider";
 import {
   DropdownMenu,
@@ -54,7 +55,8 @@ export function AppHeader() {
           </nav>
         </div>
 
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger
               className="grid size-9 place-items-center border border-ink bg-paper text-ink transition-colors hover:bg-ink hover:text-paper focus-visible:outline-none data-[state=open]:bg-ink data-[state=open]:text-paper"
