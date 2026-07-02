@@ -20,13 +20,16 @@ describe("chunkPages", () => {
     expect(out[1].content.startsWith("A".repeat(200))).toBe(true);
     expect(out[1].content.endsWith(b)).toBe(true);
     expect(out.map((c) => c.metadata.chunkIndex)).toEqual([0, 1]);
+    expect(out.map((c) => c.metadata.page)).toEqual([1, 1]);
   });
 
-  it("hard-splits a single giant paragraph with overlap", () => {
+  it("hard-splits a giant paragraph; length pins the overlap deduction", () => {
     const out = chunkPages([{ page: 1, text: "C".repeat(2500) }]);
     expect(out).toHaveLength(2);
+    // 700 = 2500 - (2000 - 200 overlap): the length encodes the overlap deduction
     expect(out[0].content).toBe("C".repeat(2000));
     expect(out[1].content).toBe("C".repeat(700));
+    expect(out.map((c) => c.metadata.chunkIndex)).toEqual([0, 1]);
   });
 
   it("preserves page numbers and increments chunkIndex across pages", () => {
