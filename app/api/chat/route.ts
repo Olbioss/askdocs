@@ -4,11 +4,12 @@ import { streamText, createTextStreamResponse, toTextStream } from "ai";
 import { createClient } from "@/lib/supabase/server";
 import { retrieveChunks, type RetrievedChunk } from "@/lib/rag/retrieve";
 import { AskInput, Citation } from "@/lib/types";
+import { jsonError } from "@/lib/http";
 
 // Allow streaming responses up to 30s (raise on Pro if needed).
 export const maxDuration = 30;
 
-function buildSystemPrompt(chunks: RetrievedChunk[]): string {
+export function buildSystemPrompt(chunks: RetrievedChunk[]): string {
   if (chunks.length === 0) {
     return [
       "You are AskDocs, a document assistant.",
@@ -38,7 +39,7 @@ function buildSystemPrompt(chunks: RetrievedChunk[]): string {
   ].join("\n");
 }
 
-function toCitations(chunks: RetrievedChunk[]): Citation[] {
+export function toCitations(chunks: RetrievedChunk[]): Citation[] {
   return chunks.map((c, i) => ({
     id: c.id,
     documentId: c.documentId,
@@ -57,19 +58,13 @@ export async function POST(req: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonError("Unauthorized", 401);
   }
 
   // 2. parse the AskInput contract your client sends
   const { question, documentId }: AskInput = await req.json();
   if (!question?.trim()) {
-    return new Response(JSON.stringify({ error: "No question provided" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonError("No question provided", 400);
   }
 
   // 3. retrieve (scoped to this user, optional single-doc)
@@ -81,10 +76,7 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     // most likely the embedding call failed (e.g. missing GOOGLE_GENERATIVE_AI_API_KEY)
-    return Response.json(
-      { error: "Retrieval failed", detail: String(err) },
-      { status: 500 },
-    );
+    return jsonError("Retrieval failed", 500, { detail: String(err) });
   }
 
   // 4. stream plain text; ship citations in an x-citations header (base64 JSON) as metadata for the UI
@@ -95,12 +87,12 @@ export async function POST(req: Request) {
     onError: ({ error }) => console.error("chat streamText error:", error),
   });
 
-  const citations864 = Buffer.from(
+  const citationsB64 = Buffer.from(
     JSON.stringify(toCitations(retrieved)),
   ).toString("base64");
 
   return createTextStreamResponse({
     stream: toTextStream({ stream: result.stream }),
-    headers: { "x-citations": citations864 },
+    headers: { "x-citations": citationsB64 },
   });
 }
