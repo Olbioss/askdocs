@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { RotateCcw } from "lucide-react";
 import { CitationMarker } from "./citation-marker";
 import type { ChatMessage as Message, Citation } from "@/lib/types";
 
@@ -42,10 +43,12 @@ export function ChatMessage({
   message,
   streaming,
   onCite,
+  onRetry,
 }: {
   message: Message;
   streaming?: boolean;
   onCite: (citations: Citation[], id: string) => void;
+  onRetry?: (id: string) => void;
 }) {
   const isUser = message.role === "user";
 
@@ -81,6 +84,17 @@ export function ChatMessage({
               {renderWithCitations(message.content, message.citations, onCite)}
               {streaming && <span className="cursor-block" aria-hidden />}
             </p>
+          )}
+
+          {!streaming && message.error && onRetry && (
+            <button
+              type="button"
+              onClick={() => onRetry(message.id)}
+              className="mt-3 inline-flex items-center gap-1.5 border border-ink bg-paper px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink transition-colors hover:bg-ink hover:text-paper"
+            >
+              <RotateCcw className="size-3" />
+              Retry
+            </button>
           )}
 
           {!streaming && message.citations && message.citations.length > 0 && (

@@ -38,16 +38,22 @@ export function ScopeSelect({
         <DropdownMenuItem onSelect={() => onChange(null)}>
           All sources
         </DropdownMenuItem>
-        {documents.length > 0 && <DropdownMenuSeparator />}
-        {documents.map((d) => (
-          <DropdownMenuItem
-            key={d.id}
-            onSelect={() => onChange(d.id)}
-            className="normal-case tracking-normal"
-          >
-            <span className="truncate">{d.filename}</span>
+        <DropdownMenuSeparator />
+        {documents.length === 0 ? (
+          <DropdownMenuItem disabled className="normal-case tracking-normal">
+            No sources yet — upload in Library
           </DropdownMenuItem>
-        ))}
+        ) : (
+          documents.map((d) => (
+            <DropdownMenuItem
+              key={d.id}
+              onSelect={() => onChange(d.id)}
+              className="normal-case tracking-normal"
+            >
+              <span className="truncate">{d.filename}</span>
+            </DropdownMenuItem>
+          ))
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

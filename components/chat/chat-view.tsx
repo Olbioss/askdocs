@@ -10,6 +10,8 @@ import { ChatEmpty } from "./chat-empty";
 import { ChatComposer } from "./chat-composer";
 import { CitationsPanel } from "./citations-panel";
 import { askQuestion, listDocuments } from "@/lib/data/client";
+import { clearChat, loadChat, saveChat } from "@/lib/chat-storage";
+import { useAuth } from "@/components/auth-provider";
 import type { ChatMessage, Citation, Document } from "@/lib/types";
 
 interface PanelState {
@@ -30,12 +32,43 @@ export function ChatView({
   const [streamingId, setStreamingId] = React.useState<string | null>(null);
   const [panel, setPanel] = React.useState<PanelState | null>(null);
   const [panelOpen, setPanelOpen] = React.useState(false);
+  const { user } = useAuth();
+  const userId = user?.id;
+  const abortRef = React.useRef<AbortController | null>(null);
+  const restoredRef = React.useRef(false);
 
   React.useEffect(() => {
     listDocuments()
       .then((d) => setDocuments(d.filter((x) => x.status === "ready")))
       .catch(() => {});
   }, []);
+
+  // Restore the persisted conversation once per user. Deferred to a microtask
+  // so the first paint matches the server render (and no sync setState in effect).
+  React.useEffect(() => {
+    let alive = true;
+    Promise.resolve().then(() => {
+      if (!alive) return;
+      if (userId) {
+        const stored = loadChat(userId);
+        if (stored.length) setMessages(stored);
+      }
+      restoredRef.current = true;
+    });
+    return () => {
+      alive = false;
+    };
+  }, [userId]);
+
+  // Persist completed messages; skipped until the restore above has run so an
+  // empty first render can't wipe a stored conversation.
+  React.useEffect(() => {
+    if (!restoredRef.current || !userId) return;
+    saveChat(userId, messages);
+  }, [userId, messages]);
+
+  // Leaving the page cancels any in-flight generation.
+  React.useEffect(() => () => abortRef.current?.abort(), []);
 
   async function send(question: string) {
     if (streamingId) return;
@@ -56,12 +89,17 @@ export function ChatView({
     };
     setMessages((prev) => [...prev, userMsg, answerMsg]);
     setStreamingId(answerId);
+    const ac = new AbortController();
+    abortRef.current = ac;
 
     try {
-      for await (const ev of askQuestion({
-        question,
-        documentId: scope ?? undefined,
-      })) {
+      for await (const ev of askQuestion(
+        {
+          question,
+          documentId: scope ?? undefined,
+        },
+        ac.signal,
+      )) {
         if (ev.type === "text") {
           setMessages((prev) =>
             prev.map((m) =>
@@ -83,27 +121,56 @@ export function ChatView({
         }
       }
     } catch (err) {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === answerId
-            ? {
-                ...m,
-                content:
-                  m.content || "Something went wrong while fetching an answer.",
-                pending: false,
-              }
-            : m,
-        ),
-      );
-      toast.error("Couldn't complete that answer", {
-        description: err instanceof Error ? err.message : undefined,
-      });
+      if (ac.signal.aborted) {
+        // user hit Stop — keep whatever streamed, no error state
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === answerId
+              ? { ...m, content: m.content || "Stopped.", pending: false }
+              : m,
+          ),
+        );
+      } else {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === answerId
+              ? {
+                  ...m,
+                  content:
+                    m.content ||
+                    "Something went wrong while fetching an answer.",
+                  pending: false,
+                  error: true,
+                }
+              : m,
+          ),
+        );
+        toast.error("Couldn't complete that answer", {
+          description: err instanceof Error ? err.message : undefined,
+        });
+      }
     } finally {
+      if (abortRef.current === ac) abortRef.current = null;
       setMessages((prev) =>
         prev.map((m) => (m.id === answerId ? { ...m, pending: false } : m)),
       );
       setStreamingId(null);
     }
+  }
+
+  function stop() {
+    abortRef.current?.abort();
+  }
+
+  function retry(answerId: string) {
+    if (streamingId) return;
+    const idx = messages.findIndex((m) => m.id === answerId);
+    const prompt = idx > 0 ? messages[idx - 1] : undefined;
+    if (!prompt || prompt.role !== "user") return;
+    setMessages((prev) =>
+      prev.filter((m) => m.id !== answerId && m.id !== prompt.id),
+    );
+    void send(prompt.content);
   }
 
   function handleCite(citations: Citation[], id: string) {
@@ -116,6 +183,7 @@ export function ChatView({
     setMessages([]);
     setPanel(null);
     setPanelOpen(false);
+    if (userId) clearChat(userId);
   }
 
   const hasMessages = messages.length > 0;
@@ -158,12 +226,17 @@ export function ChatView({
             messages={messages}
             streamingId={streamingId}
             onCite={handleCite}
+            onRetry={retry}
           />
         ) : (
           <ChatEmpty onPick={send} />
         )}
 
-        <ChatComposer onSubmit={send} disabled={!!streamingId} />
+        <ChatComposer
+          onSubmit={send}
+          onStop={stop}
+          disabled={!!streamingId}
+        />
       </section>
 
       {panelOpen && panel && (

@@ -38,6 +38,8 @@ export interface ChatMessage {
   content: string;
   citations?: Citation[];
   pending?: boolean;
+  /** Generation failed — the UI offers a retry. */
+  error?: boolean;
   createdAt: string;
 }
 

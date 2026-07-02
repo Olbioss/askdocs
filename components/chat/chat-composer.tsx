@@ -1,15 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 export function ChatComposer({
   onSubmit,
+  onStop,
   disabled,
 }: {
   onSubmit: (q: string) => void;
+  onStop?: () => void;
   disabled?: boolean;
 }) {
   const [value, setValue] = React.useState("");
@@ -43,16 +45,30 @@ export function ChatComposer({
             className="max-h-40 min-h-11 flex-1"
             disabled={disabled}
           />
-          <Button
-            variant="accent"
-            size="lg"
-            onClick={submit}
-            disabled={disabled || value.trim() === ""}
-            className="h-11 shrink-0"
-          >
-            Ask
-            <ArrowRight className="size-4" />
-          </Button>
+          {disabled && onStop ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={onStop}
+              className="h-11 shrink-0"
+              aria-label="Stop generating"
+            >
+              Stop
+              <Square className="size-3.5" />
+            </Button>
+          ) : (
+            <Button
+              variant="accent"
+              size="lg"
+              onClick={submit}
+              disabled={disabled || value.trim() === ""}
+              className="h-11 shrink-0"
+            >
+              Ask
+              <ArrowRight className="size-4" />
+            </Button>
+          )}
         </div>
         <p className="label mt-2 text-ink-40">
           Enter to send · Shift + Enter for a new line
