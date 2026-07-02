@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AskDocs
 
-## Getting Started
+Ask your documents, get answers with receipts. AskDocs is a retrieval-augmented
+(RAG) Q&A workspace: upload PDFs, DOCX, TXT or Markdown, and chat with an
+assistant that answers **only** from your files — every claim carries a numbered
+citation you can click to see the exact source passage, page and similarity
+score.
 
-First, run the development server:
+Everything runs on free tiers: Vercel (hosting), Supabase (Postgres + pgvector,
+auth, storage) and Gemini (embeddings + generation).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Stack
+
+| Layer            | Choice                                        |
+| ---------------- | --------------------------------------------- |
+| Framework        | Next.js (App Router) + TypeScript + React 19  |
+| Styling          | Tailwind v4 + hand-authored shadcn-style primitives |
+| AI orchestration | Vercel AI SDK (`ai` + `@ai-sdk/google`)       |
+| Generation       | `gemini-2.5-flash` (streaming)                |
+| Embeddings       | `gemini-embedding-001` @ 768d, L2-normalized  |
+| Database         | Supabase Postgres + pgvector (HNSW, cosine) via Drizzle |
+| Auth             | Supabase Auth (`@supabase/ssr`), email + Google OAuth |
+| File storage     | Supabase Storage (private bucket, owner-scoped RLS) |
+| Hosting          | Vercel                                        |
+
+## How it works
+
+```
+upload  ──▶ Supabase Storage ──▶ extract (unpdf/mammoth) ──▶ chunk (~2000 chars,
+            200 overlap) ──▶ embed (Gemini, 768d) ──▶ pgvector, one transaction
+
+question ──▶ embed query ──▶ cosine top-5 over the user's own chunks
+         ──▶ gemini-2.5-flash with numbered context ──▶ NDJSON stream:
+             citations first, then text deltas (so sources render immediately)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Tenant isolation is enforced twice: retrieval joins `chunks` to `documents`
+filtered by the server-verified user id, and owner-based RLS policies cover
+both tables (plus the storage bucket) for anything reaching Postgres through
+Supabase's APIs.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+bun install
+cp .env.example .env.local   # then fill in the values (see comments inside)
+bun run db:migrate           # applies drizzle/ migrations (needs DIRECT_URL)
+bun run dev
+```
 
-## Learn More
+Supabase one-time setup for a fresh project:
 
-To learn more about Next.js, take a look at the following resources:
+1. Create a project, then a **private** storage bucket named `documents`.
+2. Apply the Drizzle migrations (`bun run db:migrate`) — tables, pgvector
+   index, and table RLS policies.
+3. Apply `supabase/migrations/20260701092527_storage_documents_rls.sql` for the
+   storage-object RLS policies (Supabase CLI: `supabase db push`).
+4. Auth → URL configuration: add `<your-origin>/auth/callback` as a redirect
+   URL; enable the Google provider if you want the OAuth button.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Script                | What it does                          |
+| --------------------- | ------------------------------------- |
+| `bun run dev`         | dev server                            |
+| `bun run build`       | production build                      |
+| `bun run test`        | Vitest suite (`test:watch` to watch)  |
+| `bun run lint`        | ESLint                                |
+| `bun run typecheck`   | `tsc --noEmit`                        |
+| `bun run db:generate` | emit a migration from schema changes  |
+| `bun run db:migrate`  | apply migrations (uses `DIRECT_URL`)  |
 
-## Deploy on Vercel
+## Testing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`bun run test` runs a node-environment Vitest suite: unit tests for chunking,
+embedding normalization, retrieval scoping (the tenant-isolation guarantee),
+the NDJSON stream protocol, rate limiting, and all three API route handlers
+with services mocked.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploying to Vercel
+
+1. Import the repo; framework preset Next.js — no extra config needed.
+2. Set the environment variables from `.env.example` in Project Settings
+   (`DIRECT_URL` is only needed where you run migrations; the app itself uses
+   the pooled `DATABASE_URL`).
+3. Add your production origin to Supabase Auth's redirect URLs.
+
+Uploads are limited to 10 MB and ingestion runs inline in the request
+(`maxDuration 60`); per-user rate limits (20 uploads/h, 60 questions/h) keep a
+public demo inside the free tiers.
