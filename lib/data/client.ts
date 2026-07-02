@@ -1,28 +1,14 @@
-// Typed client for the app's data needs. Today it runs on the in-memory mock
-// backend (USE_MOCKS). The real fetch calls below already target the planned
-// /api/* contract, so wiring the backend later is just flipping USE_MOCKS.
+// Typed client for the app's data needs. Calls the /api/* route handlers.
 
-import type {
-  AskInput,
-  ChatStreamEvent,
-  Citation,
-  Document,
-} from "@/lib/types";
-import * as mocks from "./mocks";
-
-export const USE_MOCKS = false;
+import type { AskInput, ChatStreamEvent, Citation, Document } from "@/lib/types";
 
 export async function listDocuments(): Promise<Document[]> {
-  if (USE_MOCKS) return mocks.listDocuments();
-
   const res = await fetch("/api/documents", { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load documents");
   return (await res.json()) as Document[];
 }
 
 export async function uploadDocument(file: File): Promise<Document> {
-  if (USE_MOCKS) return mocks.uploadDocument(file);
-
   const form = new FormData();
   form.append("file", file);
   const res = await fetch("/api/upload", { method: "POST", body: form });
@@ -31,8 +17,6 @@ export async function uploadDocument(file: File): Promise<Document> {
 }
 
 export async function deleteDocument(id: string): Promise<void> {
-  if (USE_MOCKS) return mocks.deleteDocument(id);
-
   const res = await fetch(`/api/documents?id=${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
@@ -42,11 +26,6 @@ export async function deleteDocument(id: string): Promise<void> {
 export async function* askQuestion(
   input: AskInput,
 ): AsyncGenerator<ChatStreamEvent> {
-  if (USE_MOCKS) {
-    yield* mocks.askQuestion(input);
-    return;
-  }
-
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -63,7 +42,6 @@ export async function* askQuestion(
     if (chunk) yield { type: "text", value: chunk };
   }
 
-  // Backend is expected to return retrieved sources in a header.
   const encoded = res.headers.get("x-citations");
   if (encoded) {
     try {
