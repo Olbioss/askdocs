@@ -22,7 +22,8 @@ describe("relativeTime", () => {
 
   const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
 
-  it("just now under a minute", () => expect(relativeTime(ago(30_000))).toBe("1m ago"));
+  it("just now under 30s", () => expect(relativeTime(ago(20_000))).toBe("just now"));
+  it("rounds 30s up to 1m ago", () => expect(relativeTime(ago(30_000))).toBe("1m ago"));
   it("minutes", () => expect(relativeTime(ago(5 * 60_000))).toBe("5m ago"));
   it("hours", () => expect(relativeTime(ago(2 * 3_600_000))).toBe("2h ago"));
   it("days", () => expect(relativeTime(ago(3 * 86_400_000))).toBe("3d ago"));
