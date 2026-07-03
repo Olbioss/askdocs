@@ -71,7 +71,7 @@ export function AuthForm({
           setSent(true);
           return;
         }
-        toast.success("Account created");
+        toast.success("Hesap oluşturuldu");
         router.push(redirectTo);
         router.refresh();
       } else {
@@ -80,12 +80,12 @@ export function AuthForm({
           password,
         });
         if (error) throw error;
-        toast.success("Signed in");
+        toast.success("Giriş yapıldı");
         router.push(redirectTo);
         router.refresh();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Bir şeyler ters gitti");
     } finally {
       setPending(false);
     }
@@ -104,16 +104,16 @@ export function AuthForm({
   if (sent) {
     return (
       <div className="animate-rise border border-ink bg-paper p-6 shadow-hard">
-        <p className="label text-ink-40">Check your inbox</p>
+        <p className="label text-ink-40">Gelen kutunuza bakın</p>
         <h1 className="mt-2 font-serif text-2xl font-semibold tracking-tight text-ink">
-          Confirm your email
+          E-postanızı doğrulayın
         </h1>
         <p className="reading mt-3 text-sm text-ink-70">
-          We sent a confirmation link to finish creating your account. Open it
-          and you&rsquo;ll be signed in automatically.
+          Hesabınızı tamamlamak için bir doğrulama bağlantısı gönderdik. Açın,
+          otomatik olarak giriş yapmış olacaksınız.
         </p>
         <Button asChild variant="outline" size="lg" className="mt-6 w-full">
-          <Link href="/login">Back to sign in</Link>
+          <Link href="/login">Girişe dön</Link>
         </Button>
       </div>
     );
@@ -122,10 +122,10 @@ export function AuthForm({
   return (
     <div className="animate-rise border border-ink bg-paper p-6 shadow-hard">
       <p className="label text-ink-40">
-        {isSignup ? "Create account" : "Welcome back"}
+        {isSignup ? "Hesap oluştur" : "Tekrar hoş geldiniz"}
       </p>
       <h1 className="mt-2 font-serif text-2xl font-semibold tracking-tight text-ink">
-        {isSignup ? "Start asking your documents" : "Sign in to AskDocs"}
+        {isSignup ? "Belgelerinize sormaya başlayın" : "AskDocs'a giriş yapın"}
       </h1>
 
       {error && (
@@ -136,20 +136,20 @@ export function AuthForm({
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         {isSignup && (
-          <Field label="Name">
+          <Field label="Ad">
             <Input name="name" placeholder="Ada Lovelace" autoComplete="name" />
           </Field>
         )}
-        <Field label="Email">
+        <Field label="E-posta">
           <Input
             type="email"
             name="email"
-            placeholder="you@company.com"
+            placeholder="siz@sirket.com"
             autoComplete="email"
             required
           />
         </Field>
-        <Field label="Password">
+        <Field label="Şifre">
           <Input
             type="password"
             name="password"
@@ -159,7 +159,7 @@ export function AuthForm({
             required
           />
           {isSignup && (
-            <p className="label mt-1.5 text-ink-40">At least 6 characters</p>
+            <p className="label mt-1.5 text-ink-40">En az 6 karakter</p>
           )}
         </Field>
         <Button
@@ -171,17 +171,17 @@ export function AuthForm({
         >
           {pending
             ? isSignup
-              ? "Creating…"
-              : "Signing in…"
+              ? "Oluşturuluyor…"
+              : "Giriş yapılıyor…"
             : isSignup
-              ? "Create account"
-              : "Sign in"}
+              ? "Hesap oluştur"
+              : "Giriş yap"}
         </Button>
       </form>
 
       <div className="my-5 flex items-center gap-3">
         <span className="h-px flex-1 bg-rule" />
-        <span className="label text-ink-40">or</span>
+        <span className="label text-ink-40">veya</span>
         <span className="h-px flex-1 bg-rule" />
       </div>
 
@@ -194,7 +194,7 @@ export function AuthForm({
           onClick={() => handleOAuth("google")}
           disabled={pending}
         >
-          Continue with Google
+          Google ile devam et
         </Button>
         <Button
           type="button"
@@ -204,29 +204,29 @@ export function AuthForm({
           onClick={() => handleOAuth("github")}
           disabled={pending}
         >
-          Continue with GitHub
+          GitHub ile devam et
         </Button>
       </div>
 
       <p className="label mt-6 text-center text-ink-60">
         {isSignup ? (
           <>
-            Have an account?{" "}
+            Hesabınız var mı?{" "}
             <Link
               href="/login"
               className="text-accent underline-offset-4 hover:underline"
             >
-              Sign in
+              Giriş yap
             </Link>
           </>
         ) : (
           <>
-            New here?{" "}
+            Yeni misiniz?{" "}
             <Link
               href="/signup"
               className="text-accent underline-offset-4 hover:underline"
             >
-              Create account
+              Hesap oluştur
             </Link>
           </>
         )}

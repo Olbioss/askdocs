@@ -52,40 +52,39 @@ function HeroPreview() {
       <div className="flex items-center justify-between border-b border-ink px-4 py-2.5">
         <span className="label inline-flex items-center gap-1.5">
           <span className="size-2 bg-accent" />
-          Answer
+          Cevap
         </span>
-        <span className="label text-ink-40">2 sources</span>
+        <span className="label text-ink-40">2 kaynak</span>
       </div>
       <div className="px-5 py-5">
         <p className="label text-ink-40">
-          Q · What&rsquo;s our liquidation preference?
+          S · Tasfiye önceliğimiz nedir?
         </p>
         <p className="reading mt-3 text-[0.95rem] text-ink">
-          Investors take a{" "}
-          <span className="font-semibold">1× non-participating</span>{" "}
-          liquidation preference, paid out ahead of common holders
-          <Sup n={1} />. There&rsquo;s no full-ratchet anti-dilution in the term
-          sheet
+          Yatırımcılar, adi pay sahiplerinden önce ödenen{" "}
+          <span className="font-semibold">1× katılımsız</span> tasfiye
+          önceliğine sahip
+          <Sup n={1} />. Dönem sözleşmesinde tam cırcırlı sulanma koruması yok
           <Sup n={2} />.
         </p>
       </div>
       <div className="divide-y divide-rule border-t border-ink">
-        <PreviewSource n={1} name="Series-A-Term-Sheet.pdf" loc="p.3" score={0.92} />
-        <PreviewSource n={2} name="Series-A-Term-Sheet.pdf" loc="p.4" score={0.86} />
+        <PreviewSource n={1} name="Seri-A-Donem-Sozlesmesi.pdf" loc="s.3" score={0.92} />
+        <PreviewSource n={2} name="Seri-A-Donem-Sozlesmesi.pdf" loc="s.4" score={0.86} />
       </div>
     </div>
   );
 }
 
 const MARQUEE = [
-  "Cited answers",
+  "Kaynaklı cevaplar",
   "PDF",
   "DOCX",
   "Markdown",
-  "Contracts",
-  "Board memos",
-  "Research notes",
-  "Similarity scoring",
+  "Sözleşmeler",
+  "Yönetim notları",
+  "Araştırma notları",
+  "Benzerlik puanı",
   "pgvector",
   "Gemini 2.5 Flash",
 ];
@@ -130,32 +129,32 @@ export default async function LandingPage() {
           <div className="flex flex-col justify-center">
             <p className="label inline-flex animate-rise items-center gap-2 text-ink-60">
               <span className="size-2 bg-accent" />
-              Retrieval-augmented Q&amp;A
+              Kaynaklı Soru-Cevap
             </p>
             <h1 className="mt-5 font-serif text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-7xl">
               <span className="block animate-rise" style={{ animationDelay: "40ms" }}>
-                Ask your
+                Belgelerinize
               </span>
               <span
                 className="block animate-rise"
                 style={{ animationDelay: "110ms" }}
               >
-                documents.
+                sorun.
               </span>
               <span
                 className="block animate-rise italic text-accent"
                 style={{ animationDelay: "180ms" }}
               >
-                Get receipts.
+                Kanıtını alın.
               </span>
             </h1>
             <p
               className="reading mt-6 max-w-md animate-rise text-lg text-ink-70"
               style={{ animationDelay: "260ms" }}
             >
-              Upload contracts, memos and research. Ask in plain language. Every
-              answer comes back grounded in the exact passages it stands on —
-              with similarity scores you can check.
+              Sözleşmelerinizi, notlarınızı ve araştırmalarınızı yükleyin.
+              Sorunuzu doğal dille sorun. Her cevap, dayandığı pasajlara ve
+              denetleyebileceğiniz benzerlik puanlarına bağlı olarak gelir.
             </p>
             <div
               className="mt-8 flex animate-rise flex-wrap items-center gap-3"
@@ -165,24 +164,24 @@ export default async function LandingPage() {
                 <>
                   <Button asChild variant="accent" size="lg">
                     <Link href="/library">
-                      Open the workspace
+                      Çalışma alanını aç
                       <ArrowRight className="size-4" />
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg">
-                    <Link href="/chat">Ask a question</Link>
+                    <Link href="/chat">Soru sor</Link>
                   </Button>
                 </>
               ) : (
                 <>
                   <Button asChild variant="accent" size="lg">
                     <Link href="/signup">
-                      Get started
+                      Hemen başla
                       <ArrowRight className="size-4" />
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg">
-                    <Link href="/library">Open the workspace</Link>
+                    <Link href="/library">Çalışma alanını aç</Link>
                   </Button>
                 </>
               )}
@@ -192,8 +191,8 @@ export default async function LandingPage() {
               style={{ animationDelay: "400ms" }}
             >
               {isAuthed
-                ? "Signed in · Pick up where you left off"
-                : "No credit card · Free tier · PDF · DOCX · Markdown"}
+                ? "Oturum açık · Kaldığınız yerden devam edin"
+                : "Kredi kartı yok · Ücretsiz · PDF · DOCX · Markdown"}
             </p>
           </div>
 
@@ -228,27 +227,27 @@ export default async function LandingPage() {
       {/* How it works */}
       <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 lg:py-24">
         <div className="flex items-center gap-4">
-          <span className="label text-ink">How it works</span>
+          <span className="label text-ink">Nasıl çalışır</span>
           <span className="h-px flex-1 bg-rule" />
         </div>
         <div className="mt-8 grid border border-ink md:grid-cols-3">
           <Step
             n="01"
-            title="Upload"
+            title="Yükle"
             icon={Upload}
-            body="Drop in PDFs, docs or Markdown. We extract the text, chunk it, and embed it into a pgvector index."
+            body="PDF, DOCX veya Markdown bırakın. Metni çıkarır, parçalara böler ve pgvector dizinine gömeriz."
           />
           <Step
             n="02"
-            title="Ask"
+            title="Sor"
             icon={MessageSquareText}
-            body="Ask in plain language. We retrieve the closest passages and answer with Gemini 2.5 Flash."
+            body="Sorunuzu doğal dille sorun. En yakın pasajları bulur, Gemini 2.5 Flash ile cevaplarız."
           />
           <Step
             n="03"
-            title="Verify"
+            title="Doğrula"
             icon={BadgeCheck}
-            body="Every claim links back to its source chunk and similarity score. Trust, but verify."
+            body="Her iddia, kaynak pasajına ve benzerlik puanına bağlanır. Güven, ama doğrula."
           />
         </div>
       </section>
@@ -257,11 +256,11 @@ export default async function LandingPage() {
       <section className="border-y border-ink bg-accent text-accent-ink">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-5 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <h2 className="max-w-lg font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
-            Put your documents to work.
+            Belgelerinizi işe koşun.
           </h2>
           <Button asChild variant="default" size="lg">
             <Link href={isAuthed ? "/library" : "/signup"}>
-              {isAuthed ? "Open the workspace" : "Get started"}
+              {isAuthed ? "Çalışma alanını aç" : "Hemen başla"}
               <ArrowRight className="size-4" />
             </Link>
           </Button>

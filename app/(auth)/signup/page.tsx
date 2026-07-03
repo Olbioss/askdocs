@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth/auth-form";
 
 export const metadata: Metadata = {
-  title: "Create account — AskDocs",
+  title: "Hesap oluştur — AskDocs",
 };
 
 function safePath(value?: string | string[]) {

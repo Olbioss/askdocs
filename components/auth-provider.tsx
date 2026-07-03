@@ -50,7 +50,7 @@ export function AuthProvider({
   const signOut = React.useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
-    toast.success("Signed out");
+    toast.success("Çıkış yapıldı");
     router.push("/login");
     router.refresh();
   }, [supabase, router]);

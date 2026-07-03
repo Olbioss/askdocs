@@ -3,19 +3,19 @@ import { Logo } from "@/components/logo";
 
 const COLUMNS = [
   {
-    title: "Product",
+    title: "Ürün",
     links: [
-      { label: "Library", href: "/library" },
-      { label: "Chat", href: "/chat" },
-      { label: "Get started", href: "/signup" },
+      { label: "Kitaplık", href: "/library" },
+      { label: "Sohbet", href: "/chat" },
+      { label: "Hemen başla", href: "/signup" },
     ],
   },
   {
-    title: "Company",
+    title: "Şirket",
     links: [
-      { label: "About", href: "#" },
-      { label: "Privacy", href: "#" },
-      { label: "Terms", href: "#" },
+      { label: "Hakkında", href: "#" },
+      { label: "Gizlilik", href: "#" },
+      { label: "Koşullar", href: "#" },
     ],
   },
 ];
@@ -27,8 +27,8 @@ export function SiteFooter() {
         <div className="max-w-xs">
           <Logo />
           <p className="reading mt-4 text-sm text-ink-60">
-            Ask your documents in plain language and get answers grounded in
-            cited passages.
+            Belgelerinize doğal dille sorun; kaynak gösterilen pasajlara
+            dayanan cevaplar alın.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-x-14 gap-y-3">

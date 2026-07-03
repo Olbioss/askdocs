@@ -126,7 +126,7 @@ export function ChatView({
         setMessages((prev) =>
           prev.map((m) =>
             m.id === answerId
-              ? { ...m, content: m.content || "Stopped.", pending: false }
+              ? { ...m, content: m.content || "Durduruldu.", pending: false }
               : m,
           ),
         );
@@ -137,15 +137,14 @@ export function ChatView({
               ? {
                   ...m,
                   content:
-                    m.content ||
-                    "Something went wrong while fetching an answer.",
+                    m.content || "Cevap alınırken bir şeyler ters gitti.",
                   pending: false,
                   error: true,
                 }
               : m,
           ),
         );
-        toast.error("Couldn't complete that answer", {
+        toast.error("Cevap tamamlanamadı", {
           description: err instanceof Error ? err.message : undefined,
         });
       }
@@ -201,10 +200,11 @@ export function ChatView({
                 size="sm"
                 onClick={() => setPanelOpen((o) => !o)}
                 className="h-8 gap-1.5"
-                aria-label={`Toggle sources panel (${sourceCount})`}
+                aria-label={`Kaynak panelini aç/kapat (${sourceCount})`}
               >
                 <PanelRight className="size-3.5" />
-                <span className="hidden sm:inline">Sources</span> {sourceCount}
+                <span className="hidden sm:inline">Kaynaklar</span>{" "}
+                {sourceCount}
               </Button>
             )}
             {hasMessages && (
@@ -216,7 +216,7 @@ export function ChatView({
                 className="h-8 gap-1.5"
               >
                 <Plus className="size-3.5" />
-                New
+                Yeni
               </Button>
             )}
           </div>

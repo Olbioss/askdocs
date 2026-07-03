@@ -12,7 +12,7 @@ export function CitationCard({
 }) {
   const pct = Math.round(citation.similarity * 100);
   const loc = citation.metadata?.page
-    ? `p.${citation.metadata.page}`
+    ? `s.${citation.metadata.page}`
     : (citation.metadata?.section ?? null);
 
   return (
@@ -41,7 +41,7 @@ export function CitationCard({
 
       <div className="mt-3">
         <div className="mb-1 flex items-center justify-between">
-          <span className="label text-ink-40">Match</span>
+          <span className="label text-ink-40">Eşleşme</span>
           <span className="font-mono text-[0.625rem] font-semibold text-ink">
             {citation.similarity.toFixed(2)}
           </span>

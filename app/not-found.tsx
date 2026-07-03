@@ -8,13 +8,13 @@ export default function NotFound() {
         404
       </p>
       <h1 className="font-serif text-3xl font-semibold tracking-tight text-ink">
-        This page isn&rsquo;t in the library.
+        Bu sayfa kitaplıkta yok.
       </h1>
       <p className="reading max-w-md text-sm text-ink-60">
-        The address may be mistyped, or the page has moved.
+        Adres yanlış yazılmış ya da sayfa taşınmış olabilir.
       </p>
       <Button variant="outline" asChild>
-        <Link href="/">Back to home</Link>
+        <Link href="/">Ana sayfaya dön</Link>
       </Button>
     </div>
   );

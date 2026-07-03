@@ -24,7 +24,7 @@ export function LibraryView() {
       .catch((err: unknown) => {
         if (!alive) return;
         setDocs([]);
-        toast.error("Couldn't load documents", {
+        toast.error("Belgeler yüklenemedi", {
           description: err instanceof Error ? err.message : undefined,
         });
       });
@@ -54,8 +54,8 @@ export function LibraryView() {
         setDocs((prev) =>
           (prev ?? []).map((d) => (d.id === tempId ? doc : d)),
         );
-        toast.success(`${file.name} indexed`, {
-          description: "Ready to query in chat.",
+        toast.success(`${file.name} dizine eklendi`, {
+          description: "Sohbette sorgulanmaya hazır.",
         });
       } catch (err) {
         // Ingestion failures leave a real row behind (status "failed") — adopt its
@@ -69,7 +69,7 @@ export function LibraryView() {
               : d,
           ),
         );
-        toast.error(`Couldn't upload ${file.name}`, {
+        toast.error(`${file.name} yüklenemedi`, {
           description: err instanceof Error ? err.message : undefined,
         });
       }
@@ -81,9 +81,9 @@ export function LibraryView() {
     setDocs((prev) => prev?.filter((d) => d.id !== id) ?? null);
     try {
       await deleteDocument(id);
-      toast.success(`Deleted ${removed?.filename ?? "document"}`);
+      toast.success(`Silindi: ${removed?.filename ?? "belge"}`);
     } catch (err) {
-      toast.error("Delete failed", {
+      toast.error("Silme başarısız oldu", {
         description: err instanceof Error ? err.message : undefined,
       });
       if (removed) setDocs((prev) => [removed, ...(prev ?? [])]);
@@ -98,14 +98,14 @@ export function LibraryView() {
       <div className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
         {/* Page header */}
         <header className="animate-rise">
-          <p className="label text-ink-40">Workspace</p>
+          <p className="label text-ink-40">Çalışma alanı</p>
           <h1 className="mt-2 font-serif text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
-            Library
+            Kitaplık
           </h1>
           <p className="label mt-3 text-ink-60">
             {docs === null
-              ? "Loading…"
-              : `${total} document${total === 1 ? "" : "s"} · ${ready} ready to query`}
+              ? "Yükleniyor…"
+              : `${total} belge · ${ready} sorgulanmaya hazır`}
           </p>
         </header>
 
@@ -115,7 +115,7 @@ export function LibraryView() {
 
         {/* Section divider */}
         <div className="mb-4 mt-10 flex items-center gap-4">
-          <span className="label text-ink">Documents</span>
+          <span className="label text-ink">Belgeler</span>
           <span className="h-px flex-1 animate-rule bg-rule" />
           <span className="label text-ink-40">{total}</span>
         </div>
@@ -132,11 +132,11 @@ export function LibraryView() {
               <FolderOpen className="size-5" />
             </span>
             <p className="font-mono text-sm font-medium uppercase tracking-[0.08em]">
-              No documents yet
+              Henüz belge yok
             </p>
             <p className="reading max-w-sm text-sm text-ink-60">
-              Upload a file above to index it. Once it&rsquo;s ready, head to
-              chat and start asking questions.
+              Dizine eklemek için yukarıdan bir dosya yükleyin. Hazır olduğunda
+              sohbete geçip soru sormaya başlayabilirsiniz.
             </p>
           </div>
         ) : (

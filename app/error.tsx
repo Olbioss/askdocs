@@ -12,18 +12,18 @@ export default function Error({
 }) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-5 bg-paper px-6 text-center">
-      <p className="label text-accent">Error</p>
+      <p className="label text-accent">Hata</p>
       <h1 className="font-serif text-4xl font-semibold tracking-tight text-ink">
-        Something broke.
+        Bir şeyler ters gitti.
       </h1>
       <p className="reading max-w-md text-sm text-ink-60">
-        An unexpected error interrupted this page. Your documents are safe —
-        try again.
+        Beklenmedik bir hata sayfayı kesintiye uğrattı. Belgeleriniz güvende —
+        tekrar deneyin.
       </p>
       {error.digest && <p className="label text-ink-40">ref {error.digest}</p>}
       <Button variant="accent" onClick={() => unstable_retry()}>
         <RotateCcw className="size-4" />
-        Try again
+        Tekrar dene
       </Button>
     </div>
   );

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ChatView } from "@/components/chat/chat-view";
 
 export const metadata: Metadata = {
-  title: "Chat — AskDocs",
+  title: "Sohbet — AskDocs",
 };
 
 export default async function ChatPage({

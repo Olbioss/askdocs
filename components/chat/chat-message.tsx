@@ -56,7 +56,7 @@ export function ChatMessage({
     <article className="animate-rise border-b border-rule px-5 py-6 sm:px-8">
       <div className="mb-3 flex items-center gap-2">
         {isUser ? (
-          <span className="label text-ink-40">You</span>
+          <span className="label text-ink-40">Siz</span>
         ) : (
           <span className="inline-flex items-center gap-1.5">
             <span className="size-2.5 bg-accent" />
@@ -81,7 +81,7 @@ export function ChatMessage({
               className="label inline-flex items-center gap-2 text-ink-60"
             >
               <span className="size-2 animate-pulse bg-accent" />
-              Searching sources…
+              Kaynaklar aranıyor…
             </span>
           ) : (
             <p>
@@ -97,13 +97,13 @@ export function ChatMessage({
               className="mt-3 inline-flex items-center gap-1.5 border border-ink bg-paper px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-ink transition-colors hover:bg-ink hover:text-paper"
             >
               <RotateCcw className="size-3" />
-              Retry
+              Tekrar dene
             </button>
           )}
 
           {!streaming && message.citations && message.citations.length > 0 && (
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="label text-ink-40">Sources</span>
+              <span className="label text-ink-40">Kaynaklar</span>
               {message.citations.map((c, i) => (
                 <button
                   key={c.id}

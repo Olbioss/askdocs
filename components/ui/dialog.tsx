@@ -40,7 +40,7 @@ function DialogContent({
         {children}
         <DialogPrimitive.Close className="absolute right-3 top-3 border border-transparent p-1 text-ink transition-colors hover:border-ink hover:bg-ink hover:text-paper focus-visible:outline-none">
           <X className="size-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">Kapat</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPortal>

@@ -24,17 +24,17 @@ export function UploadZone({
     for (const file of Array.from(list)) {
       const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
       if (!ACCEPT_EXT.includes(ext)) {
-        toast.error(`Can't upload ${file.name}`, {
+        toast.error(`${file.name} yüklenemez`, {
           description:
             ext === ".doc"
-              ? "Legacy .doc isn't supported — save as .docx or PDF."
-              : "Only PDF, DOCX, TXT and Markdown are supported.",
+              ? "Eski .doc biçimi desteklenmiyor — .docx veya PDF olarak kaydedin."
+              : "Yalnızca PDF, DOCX, TXT ve Markdown destekleniyor.",
         });
         continue;
       }
       if (file.size > MAX_BYTES) {
-        toast.error(`Can't upload ${file.name}`, {
-          description: "Files can be at most 10 MB.",
+        toast.error(`${file.name} yüklenemez`, {
+          description: "Dosyalar en fazla 10 MB olabilir.",
         });
         continue;
       }
@@ -59,7 +59,7 @@ export function UploadZone({
         handleFiles(e.dataTransfer.files);
       }}
       role="region"
-      aria-label="Upload documents"
+      aria-label="Belge yükleme alanı"
       className={cn(
         "relative flex flex-col items-center justify-center gap-4 border-2 border-dashed px-6 py-10 text-center transition-[background-color,border-color,box-shadow]",
         drag
@@ -77,11 +77,11 @@ export function UploadZone({
       </span>
       <div>
         <p className="font-mono text-sm font-medium uppercase tracking-[0.08em] text-ink">
-          Drop documents to upload
+          Yüklemek için belgeleri bırakın
         </p>
         <p className="reading mx-auto mt-1.5 max-w-sm text-sm text-ink-60">
-          PDF, DOCX, TXT or Markdown — up to 10 MB each. Drag them here, or
-          browse from your device.
+          PDF, DOCX, TXT veya Markdown — her biri en fazla 10 MB. Buraya
+          sürükleyin ya da cihazınızdan seçin.
         </p>
       </div>
       <Button
@@ -90,7 +90,7 @@ export function UploadZone({
         size="sm"
         onClick={() => inputRef.current?.click()}
       >
-        Browse files
+        Dosya seç
       </Button>
       <input
         ref={inputRef}

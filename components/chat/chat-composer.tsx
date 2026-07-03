@@ -41,7 +41,7 @@ export function ChatComposer({
               }
             }}
             rows={1}
-            placeholder="Ask anything about your documents…"
+            placeholder="Belgeleriniz hakkında bir şey sorun…"
             className="max-h-40 min-h-11 flex-1"
             disabled={disabled}
           />
@@ -52,9 +52,9 @@ export function ChatComposer({
               size="lg"
               onClick={onStop}
               className="h-11 shrink-0"
-              aria-label="Stop generating"
+              aria-label="Cevap oluşturmayı durdur"
             >
-              Stop
+              Durdur
               <Square className="size-3.5" />
             </Button>
           ) : (
@@ -65,13 +65,13 @@ export function ChatComposer({
               disabled={disabled || value.trim() === ""}
               className="h-11 shrink-0"
             >
-              Ask
+              Sor
               <ArrowRight className="size-4" />
             </Button>
           )}
         </div>
         <p className="label mt-2 text-ink-40">
-          Enter to send · Shift + Enter for a new line
+          Göndermek için Enter · Yeni satır için Shift + Enter
         </p>
       </div>
     </div>

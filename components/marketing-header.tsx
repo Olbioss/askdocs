@@ -25,11 +25,11 @@ export async function MarketingHeader() {
                   size="sm"
                   className="hidden sm:inline-flex"
                 >
-                  Sign out
+                  Çıkış yap
                 </Button>
               </form>
               <Button asChild variant="accent" size="sm">
-                <Link href="/library">Open app</Link>
+                <Link href="/library">Uygulamayı aç</Link>
               </Button>
             </>
           ) : (
@@ -40,10 +40,10 @@ export async function MarketingHeader() {
                 size="sm"
                 className="hidden sm:inline-flex"
               >
-                <Link href="/login">Sign in</Link>
+                <Link href="/login">Giriş yap</Link>
               </Button>
               <Button asChild variant="accent" size="sm">
-                <Link href="/signup">Get started</Link>
+                <Link href="/signup">Hemen başla</Link>
               </Button>
             </>
           )}

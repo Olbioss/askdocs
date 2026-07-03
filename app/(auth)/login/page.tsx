@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth/auth-form";
 
 export const metadata: Metadata = {
-  title: "Sign in — AskDocs",
+  title: "Giriş yap — AskDocs",
 };
 
 // Only allow internal redirect targets (prevents open-redirect).

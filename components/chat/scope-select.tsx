@@ -21,27 +21,27 @@ export function ScopeSelect({
   onChange: (id: string | null) => void;
 }) {
   const current = documents.find((d) => d.id === value);
-  const label = current ? current.filename : "All sources";
+  const label = current ? current.filename : "Tüm kaynaklar";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         className="inline-flex h-9 max-w-[14rem] items-center gap-2 border border-ink bg-paper px-3 font-mono text-xs uppercase tracking-[0.06em] text-ink transition-colors hover:bg-paper-2 focus-visible:outline-none data-[state=open]:shadow-hard-sm sm:max-w-[18rem]"
-        aria-label="Choose which documents to search"
+        aria-label="Hangi belgelerde aranacağını seçin"
       >
         <Database className="size-3.5 shrink-0" />
         <span className="truncate normal-case tracking-normal">{label}</span>
         <ChevronDown className="ml-auto size-3.5 shrink-0" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="max-w-[20rem]">
-        <DropdownMenuLabel>Search scope</DropdownMenuLabel>
+        <DropdownMenuLabel>Arama kapsamı</DropdownMenuLabel>
         <DropdownMenuItem onSelect={() => onChange(null)}>
-          All sources
+          Tüm kaynaklar
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         {documents.length === 0 ? (
           <DropdownMenuItem disabled className="normal-case tracking-normal">
-            No sources yet — upload in Library
+            Henüz kaynak yok — Kitaplık&rsquo;tan yükleyin
           </DropdownMenuItem>
         ) : (
           documents.map((d) => (

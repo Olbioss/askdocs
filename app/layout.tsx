@@ -16,9 +16,9 @@ const serif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: "AskDocs — Ask your documents, get answers with receipts",
+  title: "AskDocs — Belgelerinize sorun, kanıtlı cevaplar alın",
   description:
-    "A Retrieval-Augmented Q&A workspace. Upload documents, ask questions, and get answers grounded in cited sources.",
+    "Kaynak destekli (RAG) bir soru-cevap çalışma alanı. Belgelerinizi yükleyin, sorularınızı sorun, kaynak gösteren cevaplar alın.",
 };
 
 export default function RootLayout({
@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="tr"
       className={`${mono.variable} ${serif.variable} h-full antialiased`}
       suppressHydrationWarning
     >

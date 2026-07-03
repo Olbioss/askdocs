@@ -31,8 +31,8 @@ export function DocumentCard({
 
   const meta = [
     relativeTime(doc.createdAt),
-    doc.pages ? `${doc.pages} pp` : null,
-    doc.chunkCount ? `${doc.chunkCount} chunks` : null,
+    doc.pages ? `${doc.pages} sayfa` : null,
+    doc.chunkCount ? `${doc.chunkCount} parça` : null,
   ]
     .filter(Boolean)
     .join("  ·  ");
@@ -71,10 +71,10 @@ export function DocumentCard({
             >
               <Link
                 href={`/chat?doc=${doc.id}`}
-                aria-label={`Ask about ${doc.filename}`}
+                aria-label={`${doc.filename} hakkında soru sor`}
               >
                 <MessageSquareText className="size-3.5" />
-                Ask
+                Sor
               </Link>
             </Button>
           )}
@@ -84,24 +84,25 @@ export function DocumentCard({
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                aria-label={`Delete ${doc.filename}`}
+                aria-label={`${doc.filename} belgesini sil`}
               >
                 <Trash2 className="size-3.5" />
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Delete document</DialogTitle>
+                <DialogTitle>Belgeyi sil</DialogTitle>
                 <DialogDescription>
-                  This permanently removes{" "}
-                  <span className="font-mono text-ink">{doc.filename}</span> and
-                  all of its indexed chunks. This can&rsquo;t be undone.
+                  Bu işlem{" "}
+                  <span className="font-mono text-ink">{doc.filename}</span>{" "}
+                  belgesini ve tüm dizinlenmiş parçalarını kalıcı olarak
+                  kaldırır. Geri alınamaz.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
                   <Button variant="outline" size="sm">
-                    Cancel
+                    Vazgeç
                   </Button>
                 </DialogClose>
                 <Button
@@ -112,7 +113,7 @@ export function DocumentCard({
                     onDelete(doc.id);
                   }}
                 >
-                  Delete
+                  Sil
                 </Button>
               </DialogFooter>
             </DialogContent>

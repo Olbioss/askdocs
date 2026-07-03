@@ -13,7 +13,7 @@ export function StatusBadge({
     return (
       <Badge className={className}>
         <span className="size-1.5 bg-ink" />
-        Ready
+        Hazır
       </Badge>
     );
   }
@@ -21,14 +21,14 @@ export function StatusBadge({
     return (
       <Badge variant="muted" className={className}>
         <span className="size-1.5 animate-pulse bg-ink" />
-        Processing
+        İşleniyor
       </Badge>
     );
   }
   return (
     <Badge className={cn("border-accent text-accent", className)}>
       <span className="size-1.5 bg-accent" />
-      Failed
+      Başarısız
     </Badge>
   );
 }

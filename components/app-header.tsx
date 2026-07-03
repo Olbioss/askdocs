@@ -17,8 +17,8 @@ import {
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/library", label: "Library", icon: FileText },
-  { href: "/chat", label: "Chat", icon: MessagesSquare },
+  { href: "/library", label: "Kitaplık", icon: FileText },
+  { href: "/chat", label: "Sohbet", icon: MessagesSquare },
 ];
 
 export function AppHeader() {
@@ -60,7 +60,7 @@ export function AppHeader() {
           <DropdownMenu>
             <DropdownMenuTrigger
               className="grid size-9 place-items-center border border-ink bg-paper text-ink transition-colors hover:bg-ink hover:text-paper focus-visible:outline-none data-[state=open]:bg-ink data-[state=open]:text-paper"
-              aria-label="Account menu"
+              aria-label="Hesap menüsü"
             >
               {user ? (
                 <span className="font-mono text-xs font-semibold uppercase">
@@ -72,20 +72,20 @@ export function AppHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuLabel>
-                {user ? user.email : "Not signed in"}
+                {user ? user.email : "Oturum açılmadı"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {user ? (
                 <DropdownMenuItem onSelect={() => signOut()}>
-                  Sign out
+                  Çıkış yap
                 </DropdownMenuItem>
               ) : (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/login">Sign in</Link>
+                    <Link href="/login">Giriş yap</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/signup">Create account</Link>
+                    <Link href="/signup">Hesap oluştur</Link>
                   </DropdownMenuItem>
                 </>
               )}
