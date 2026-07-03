@@ -43,6 +43,7 @@ next-env.d.ts
 
 # Claude Code agent skills (installed locally, regenerable)
 /.agents/
+docs
 skills-lock.json
 
 # editors
