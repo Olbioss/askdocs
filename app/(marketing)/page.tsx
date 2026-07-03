@@ -32,11 +32,16 @@ function PreviewSource({
       <span className="grid size-5 shrink-0 place-items-center border border-accent font-mono text-[0.625rem] font-semibold text-accent">
         {n}
       </span>
-      <span className="truncate font-mono text-[0.6875rem] text-ink">{name}</span>
+      <span className="truncate font-mono text-[0.6875rem] text-ink">
+        {name}
+      </span>
       <span className="label shrink-0 text-ink-40">{loc}</span>
       <div className="ml-auto flex w-24 shrink-0 items-center gap-2">
         <div className="h-1.5 flex-1 border border-ink bg-paper">
-          <div className="h-full bg-accent" style={{ width: `${score * 100}%` }} />
+          <div
+            className="h-full bg-accent"
+            style={{ width: `${score * 100}%` }}
+          />
         </div>
         <span className="font-mono text-[0.625rem] font-semibold text-ink">
           {score.toFixed(2)}
@@ -57,20 +62,29 @@ function HeroPreview() {
         <span className="label text-ink-40">2 kaynak</span>
       </div>
       <div className="px-5 py-5">
-        <p className="label text-ink-40">
-          S · Tasfiye önceliğimiz nedir?
-        </p>
+        <p className="label text-ink-40">S · Tasfiye önceliğimiz nedir?</p>
         <p className="reading mt-3 text-[0.95rem] text-ink">
           Yatırımcılar, adi pay sahiplerinden önce ödenen{" "}
           <span className="font-semibold">1× katılımsız</span> tasfiye
           önceliğine sahip
-          <Sup n={1} />. Dönem sözleşmesinde tam cırcırlı sulanma koruması yok
+          <Sup n={1} />. Dönem sözleşmesinde full-ratchet anti-dilüsyon koruması
+          yok
           <Sup n={2} />.
         </p>
       </div>
       <div className="divide-y divide-rule border-t border-ink">
-        <PreviewSource n={1} name="Seri-A-Donem-Sozlesmesi.pdf" loc="s.3" score={0.92} />
-        <PreviewSource n={2} name="Seri-A-Donem-Sozlesmesi.pdf" loc="s.4" score={0.86} />
+        <PreviewSource
+          n={1}
+          name="Seri-A-Donem-Sozlesmesi.pdf"
+          loc="s.3"
+          score={0.92}
+        />
+        <PreviewSource
+          n={2}
+          name="Seri-A-Donem-Sozlesmesi.pdf"
+          loc="s.4"
+          score={0.86}
+        />
       </div>
     </div>
   );
@@ -132,7 +146,10 @@ export default async function LandingPage() {
               Kaynaklı Soru-Cevap
             </p>
             <h1 className="mt-5 font-serif text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-7xl">
-              <span className="block animate-rise" style={{ animationDelay: "40ms" }}>
+              <span
+                className="block animate-rise"
+                style={{ animationDelay: "40ms" }}
+              >
                 Belgelerinize
               </span>
               <span
@@ -209,7 +226,11 @@ export default async function LandingPage() {
       <section className="overflow-hidden border-b border-ink bg-ink py-3">
         <div className="marquee-track flex w-max">
           {[0, 1].map((half) => (
-            <div key={half} className="flex shrink-0 items-center" aria-hidden={half === 1}>
+            <div
+              key={half}
+              className="flex shrink-0 items-center"
+              aria-hidden={half === 1}
+            >
               {MARQUEE.map((item) => (
                 <span
                   key={`${half}-${item}`}
