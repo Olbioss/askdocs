@@ -29,7 +29,9 @@ export async function extractDocument(
   mimeType: string,
 ): Promise<ExtractedPage[]> {
   if (mimeType === "application/pdf") {
-    const pdf = await getDocumentProxy(new Uint8Array(buffer));
+    // pdf.js transfers (detaches) the buffer it's given — hand it a copy so
+    // the original stays readable for the OCR fallback below
+    const pdf = await getDocumentProxy(new Uint8Array(buffer.slice(0)));
     const { text } = await extractText(pdf, { mergePages: false });
     // extractText with mergePages:false returns string[] (one per page)
     const pages = Array.isArray(text) ? text : [text];
