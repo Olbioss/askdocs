@@ -1,5 +1,6 @@
 import { extractText, getDocumentProxy } from "unpdf";
 import mammoth from "mammoth";
+import { isLikelyScanned, ocrPdf } from "./ocr";
 
 /** All MIME types the pipeline can ingest. Use this in the upload route's allow-list. */
 export const SUPPORTED_MIMES = [
@@ -32,9 +33,22 @@ export async function extractDocument(
     const { text } = await extractText(pdf, { mergePages: false });
     // extractText with mergePages:false returns string[] (one per page)
     const pages = Array.isArray(text) ? text : [text];
-    return pages
+    const extracted = pages
       .map((t, i) => ({ page: i + 1, text: t.trim() }))
       .filter((p) => p.text.length > 0);
+
+    // Scanned PDFs have no usable text layer — fall back to Gemini OCR.
+    // A failed OCR is non-fatal: the empty result below makes ingestion
+    // fail with the friendly "no extractable text" message.
+    if (isLikelyScanned(extracted, pdf.numPages)) {
+      try {
+        const ocr = await ocrPdf(buffer);
+        if (ocr.length > 0) return ocr;
+      } catch (err) {
+        console.error("[ocr] transcription failed", err);
+      }
+    }
+    return extracted;
   }
 
   if (

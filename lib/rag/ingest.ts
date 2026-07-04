@@ -12,10 +12,13 @@ export async function ingestDocument(
 ) {
   try {
     const pages = await extractDocument(buffer, mimeType);
-    if (pages.length === 0) throw new Error("No extractable text found");
+    if (pages.length === 0)
+      throw new Error(
+        "Belgeden metin çıkarılamadı — dosya boş ya da salt görüntü olabilir",
+      );
 
     const pieces = chunkPages(pages);
-    if (pieces.length === 0) throw new Error("No chunks produced");
+    if (pieces.length === 0) throw new Error("Belge içeriği işlenemedi");
 
     const embeddings = await embedChunks(pieces.map((p) => p.content));
 

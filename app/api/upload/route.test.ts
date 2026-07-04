@@ -131,6 +131,11 @@ describe("POST /api/upload", () => {
     ingestDocument.mockRejectedValue(new Error("bad"));
     const res = await POST(reqWith(pdf()));
     expect(res.status).toBe(500);
-    expect(await res.json()).toMatchObject({ id: "doc-1", status: "failed" });
+    // the raw Error message, without a serialized "Error: " prefix
+    expect(await res.json()).toMatchObject({
+      id: "doc-1",
+      status: "failed",
+      error: "bad",
+    });
   });
 });

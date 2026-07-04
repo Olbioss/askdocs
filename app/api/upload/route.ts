@@ -10,8 +10,10 @@ const UPLOADS_PER_HOUR = 20;
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
-// Ingestion runs inline (extract → embed → store), so give large files headroom.
-export const maxDuration = 60;
+// Ingestion runs inline (extract → OCR fallback for scans → embed → store);
+// Gemini transcription of a multi-page scan can take minutes, so use the full
+// Fluid Compute allowance.
+export const maxDuration = 300;
 
 /**
  * Storage object keys choke on exotic characters and unbounded length; the
@@ -86,6 +88,8 @@ export async function POST(req: Request) {
       chunkCount,
     });
   } catch (err) {
-    return jsonError(String(err), 500, { id: doc.id, status: "failed" });
+    // err.message, not String(err) — the "Error: " prefix would leak into toasts
+    const message = err instanceof Error ? err.message : String(err);
+    return jsonError(message, 500, { id: doc.id, status: "failed" });
   }
 }

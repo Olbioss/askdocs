@@ -29,6 +29,9 @@ auth, storage) and Gemini (embeddings + generation).
 upload  ──▶ Supabase Storage ──▶ extract (unpdf/mammoth) ──▶ chunk (~2000 chars,
             200 overlap) ──▶ embed (Gemini, 768d) ──▶ pgvector, one transaction
 
+scanned PDF (no text layer) ──▶ OCR fallback: the PDF bytes go to
+            gemini-2.5-flash (multimodal) for a per-page transcription
+
 question ──▶ embed query ──▶ cosine top-5 over the user's own chunks
          ──▶ gemini-2.5-flash with numbered context ──▶ NDJSON stream:
              citations first, then text deltas (so sources render immediately)
