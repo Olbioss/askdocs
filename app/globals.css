@@ -15,7 +15,7 @@
   --ink-60: rgba(12, 12, 12, 0.6);
   --ink-40: rgba(12, 12, 12, 0.4);
   --rule: rgba(12, 12, 12, 0.16);
-  --accent: #2438e8;
+  --accent: #0e7a4e;
   --accent-ink: #f7f4ec;
   --scrim: rgba(0, 0, 0, 0.45);
 
@@ -36,7 +36,7 @@
   --ink-60: rgba(236, 231, 219, 0.6);
   --ink-40: rgba(236, 231, 219, 0.42);
   --rule: rgba(236, 231, 219, 0.16);
-  --accent: #7d8cff;
+  --accent: #3fd68f;
   --accent-ink: #151310;
   --scrim: rgba(0, 0, 0, 0.6);
 }

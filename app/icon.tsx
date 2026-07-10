@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-// Favicon: the Logo component's mark (components/logo.tsx) — a vermilion
+// Favicon: the Logo component's mark (components/logo.tsx) — a phthalo-green
 // square with a bold "A" — rendered at tab size.
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
@@ -15,7 +15,7 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#e5341f",
+          backgroundColor: "#0e7a4e",
           border: "2px solid #0c0c0c",
           color: "#f7f4ec",
           fontSize: 22,
