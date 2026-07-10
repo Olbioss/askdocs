@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { ChatView } from "@/components/chat/chat-view";
 
-export const metadata: Metadata = {
-  title: "Sohbet — AskDocs",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  return {
+    title: t("chatTitle"),
+    alternates: { languages: { en: "/chat", tr: "/tr/chat" } },
+  };
+}
 
 export default async function ChatPage({
   searchParams,

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { PanelRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ export function ChatView({
 }: {
   initialDocumentId?: string;
 }) {
+  const t = useTranslations("Chat");
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [documents, setDocuments] = React.useState<Document[]>([]);
   const [scope, setScope] = React.useState<string | null>(
@@ -126,7 +128,7 @@ export function ChatView({
         setMessages((prev) =>
           prev.map((m) =>
             m.id === answerId
-              ? { ...m, content: m.content || "Durduruldu.", pending: false }
+              ? { ...m, content: m.content || t("stopped"), pending: false }
               : m,
           ),
         );
@@ -136,15 +138,14 @@ export function ChatView({
             m.id === answerId
               ? {
                   ...m,
-                  content:
-                    m.content || "Cevap alınırken bir şeyler ters gitti.",
+                  content: m.content || t("errorFallback"),
                   pending: false,
                   error: true,
                 }
               : m,
           ),
         );
-        toast.error("Cevap tamamlanamadı", {
+        toast.error(t("incomplete"), {
           description: err instanceof Error ? err.message : undefined,
         });
       }
@@ -200,10 +201,10 @@ export function ChatView({
                 size="sm"
                 onClick={() => setPanelOpen((o) => !o)}
                 className="h-8 gap-1.5"
-                aria-label={`Kaynak panelini aç/kapat (${sourceCount})`}
+                aria-label={t("sourcesPanelAria", { count: sourceCount })}
               >
                 <PanelRight className="size-3.5" />
-                <span className="hidden sm:inline">Kaynaklar</span>{" "}
+                <span className="hidden sm:inline">{t("sources")}</span>{" "}
                 {sourceCount}
               </Button>
             )}
@@ -216,7 +217,7 @@ export function ChatView({
                 className="h-8 gap-1.5"
               >
                 <Plus className="size-3.5" />
-                Yeni
+                {t("new")}
               </Button>
             )}
           </div>

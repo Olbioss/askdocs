@@ -69,7 +69,7 @@ describe("ingestDocument", () => {
   it("marks the document failed when nothing is extractable", async () => {
     extractDocument.mockResolvedValue([]);
     await expect(ingestDocument("doc-1", buf, "application/pdf")).rejects.toThrow(
-      /metin çıkarılamadı/i,
+      /no text could be extracted/i,
     );
     expect(h.dbUpdateSet).toHaveBeenCalledWith({ status: "failed" });
   });

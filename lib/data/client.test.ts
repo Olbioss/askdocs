@@ -38,7 +38,7 @@ describe("listDocuments", () => {
 
   it("falls back to a generic message when the error body isn't JSON", async () => {
     stubFetch(new Response("boom", { status: 500 }));
-    await expect(listDocuments()).rejects.toThrow("Belgeler yüklenemedi");
+    await expect(listDocuments()).rejects.toThrow("Couldn't load documents");
   });
 });
 
@@ -64,7 +64,7 @@ describe("uploadDocument", () => {
     stubFetch(new Response("boom", { status: 502 }));
     const err = await uploadDocument(file).catch((e) => e);
     expect(err).toBeInstanceOf(UploadError);
-    expect(err.message).toBe("Yükleme başarısız oldu");
+    expect(err.message).toBe("Upload failed");
     expect(err.documentId).toBeUndefined();
   });
 });

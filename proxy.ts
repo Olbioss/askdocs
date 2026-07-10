@@ -1,8 +1,24 @@
+import createIntlMiddleware from "next-intl/middleware";
+import { NextResponse, type NextRequest } from "next/server";
+import { routing } from "@/i18n/routing";
 import { updateSession } from "@/lib/supabase/proxy";
-import { type NextRequest } from "next/server";
+
+const handleI18n = createIntlMiddleware(routing);
 
 export async function proxy(request: NextRequest) {
-  return await updateSession(request);
+  const { pathname } = request.nextUrl;
+
+  // API routes and the OAuth callback are never locale-prefixed:
+  // refresh the session only, skip locale routing.
+  if (pathname.startsWith("/api") || pathname.startsWith("/auth")) {
+    return updateSession(request, NextResponse.next({ request }));
+  }
+
+  // Locale routing first (rewrite "/" → "/en" internally, redirect "/en/x"
+  // → "/x", set NEXT_LOCALE), then refresh Supabase cookies onto that
+  // response and apply auth redirects.
+  const response = handleI18n(request);
+  return updateSession(request, response);
 }
 
 export const config = {

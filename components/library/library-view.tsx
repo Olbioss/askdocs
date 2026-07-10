@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { FolderOpen } from "lucide-react";
 import { UploadZone } from "./upload-zone";
@@ -15,6 +16,7 @@ import {
 import type { Document } from "@/lib/types";
 
 export function LibraryView() {
+  const t = useTranslations("Library");
   const [docs, setDocs] = React.useState<Document[] | null>(null);
 
   React.useEffect(() => {
@@ -24,13 +26,14 @@ export function LibraryView() {
       .catch((err: unknown) => {
         if (!alive) return;
         setDocs([]);
-        toast.error("Belgeler yüklenemedi", {
+        toast.error(t("loadFailed"), {
           description: err instanceof Error ? err.message : undefined,
         });
       });
     return () => {
       alive = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleUpload(files: File[]) {
@@ -54,8 +57,8 @@ export function LibraryView() {
         setDocs((prev) =>
           (prev ?? []).map((d) => (d.id === tempId ? doc : d)),
         );
-        toast.success(`${file.name} dizine eklendi`, {
-          description: "Sohbette sorgulanmaya hazır.",
+        toast.success(t("indexed", { name: file.name }), {
+          description: t("readyToQuery"),
         });
       } catch (err) {
         // Ingestion failures leave a real row behind (status "failed") — adopt its
@@ -69,7 +72,7 @@ export function LibraryView() {
               : d,
           ),
         );
-        toast.error(`${file.name} yüklenemedi`, {
+        toast.error(t("uploadFailed", { name: file.name }), {
           description: err instanceof Error ? err.message : undefined,
         });
       }
@@ -81,9 +84,11 @@ export function LibraryView() {
     setDocs((prev) => prev?.filter((d) => d.id !== id) ?? null);
     try {
       await deleteDocument(id);
-      toast.success(`Silindi: ${removed?.filename ?? "belge"}`);
+      toast.success(
+        t("deleted", { name: removed?.filename ?? t("fallbackDoc") }),
+      );
     } catch (err) {
-      toast.error("Silme başarısız oldu", {
+      toast.error(t("deleteFailed"), {
         description: err instanceof Error ? err.message : undefined,
       });
       if (removed) setDocs((prev) => [removed, ...(prev ?? [])]);
@@ -98,14 +103,12 @@ export function LibraryView() {
       <div className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
         {/* Page header */}
         <header className="animate-rise">
-          <p className="label text-ink-40">Çalışma alanı</p>
+          <p className="label text-ink-40">{t("workspace")}</p>
           <h1 className="mt-2 font-serif text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
-            Kitaplık
+            {t("title")}
           </h1>
           <p className="label mt-3 text-ink-60">
-            {docs === null
-              ? "Yükleniyor…"
-              : `${total} belge · ${ready} sorgulanmaya hazır`}
+            {docs === null ? t("loading") : t("stats", { total, ready })}
           </p>
         </header>
 
@@ -115,7 +118,7 @@ export function LibraryView() {
 
         {/* Section divider */}
         <div className="mb-4 mt-10 flex items-center gap-4">
-          <span className="label text-ink">Belgeler</span>
+          <span className="label text-ink">{t("documents")}</span>
           <span className="h-px flex-1 animate-rule bg-rule" />
           <span className="label text-ink-40">{total}</span>
         </div>
@@ -132,11 +135,10 @@ export function LibraryView() {
               <FolderOpen className="size-5" />
             </span>
             <p className="font-mono text-sm font-medium uppercase tracking-[0.08em]">
-              Henüz belge yok
+              {t("emptyTitle")}
             </p>
             <p className="reading max-w-sm text-sm text-ink-60">
-              Dizine eklemek için yukarıdan bir dosya yükleyin. Hazır olduğunda
-              sohbete geçip soru sormaya başlayabilirsiniz.
+              {t("emptyBody")}
             </p>
           </div>
         ) : (

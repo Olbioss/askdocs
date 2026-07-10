@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AuthForm } from "@/components/auth/auth-form";
 
-export const metadata: Metadata = {
-  title: "Hesap oluştur — AskDocs",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  return {
+    title: t("signupTitle"),
+    alternates: { languages: { en: "/signup", tr: "/tr/signup" } },
+  };
+}
 
 function safePath(value?: string | string[]) {
   const v = Array.isArray(value) ? value[0] : value;

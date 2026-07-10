@@ -25,20 +25,39 @@ function messageFrom(body: Record<string, unknown>, fallback: string): string {
   return typeof body.error === "string" && body.error ? body.error : fallback;
 }
 
+/**
+ * The API routes live outside the [locale] segment, so the active locale
+ * travels as a header. <html lang> is set by the [locale] root layout; the
+ * guard keeps node-env unit tests (no document) working. Fallback strings
+ * below stay English — the server's localized message wins whenever present.
+ */
+function localeHeaders(): Record<string, string> {
+  return typeof document !== "undefined"
+    ? { "x-locale": document.documentElement.lang }
+    : {};
+}
+
 export async function listDocuments(): Promise<Document[]> {
-  const res = await fetch("/api/documents", { cache: "no-store" });
+  const res = await fetch("/api/documents", {
+    cache: "no-store",
+    headers: localeHeaders(),
+  });
   if (!res.ok)
-    throw new Error(messageFrom(await errorBody(res), "Belgeler yüklenemedi"));
+    throw new Error(messageFrom(await errorBody(res), "Couldn't load documents"));
   return (await res.json()) as Document[];
 }
 
 export async function uploadDocument(file: File): Promise<Document> {
   const form = new FormData();
   form.append("file", file);
-  const res = await fetch("/api/upload", { method: "POST", body: form });
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    body: form,
+    headers: localeHeaders(),
+  });
   if (!res.ok) {
     const body = await errorBody(res);
-    const err = new UploadError(messageFrom(body, "Yükleme başarısız oldu"));
+    const err = new UploadError(messageFrom(body, "Upload failed"));
     if (typeof body.id === "string") err.documentId = body.id;
     if (body.status === "processing" || body.status === "ready" || body.status === "failed") {
       err.status = body.status;
@@ -51,9 +70,10 @@ export async function uploadDocument(file: File): Promise<Document> {
 export async function deleteDocument(id: string): Promise<void> {
   const res = await fetch(`/api/documents?id=${encodeURIComponent(id)}`, {
     method: "DELETE",
+    headers: localeHeaders(),
   });
   if (!res.ok)
-    throw new Error(messageFrom(await errorBody(res), "Silme başarısız oldu"));
+    throw new Error(messageFrom(await errorBody(res), "Delete failed"));
 }
 
 export async function* askQuestion(
@@ -62,13 +82,13 @@ export async function* askQuestion(
 ): AsyncGenerator<ChatStreamEvent> {
   const res = await fetch("/api/chat", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...localeHeaders() },
     body: JSON.stringify(input),
     signal,
   });
   if (!res.ok)
-    throw new Error(messageFrom(await errorBody(res), "Sohbet isteği başarısız oldu"));
-  if (!res.body) throw new Error("Sohbet isteği başarısız oldu");
+    throw new Error(messageFrom(await errorBody(res), "Chat request failed"));
+  if (!res.body) throw new Error("Chat request failed");
 
   // The route streams NDJSON ChatStreamEvent lines; reads can split a line
   // anywhere (including mid-codepoint), so buffer and emit per newline.

@@ -5,15 +5,18 @@ import {
 } from "@/lib/db/documents";
 import { createClient } from "@/lib/supabase/server";
 import { jsonError } from "@/lib/http";
+import { resolveLocale } from "@/lib/i18n/get-locale";
+import { apiMessages } from "@/lib/i18n/api-messages";
 import { Document } from "@/lib/types";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const m = apiMessages(resolveLocale(req));
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return jsonError("Oturum açmanız gerekiyor", 401);
+  if (!user) return jsonError(m.unauthorized, 401);
 
   const rows = await listDocumentsWithCounts(user.id);
   const result: Document[] = rows.map((r) => ({
@@ -28,17 +31,18 @@ export async function GET() {
 }
 
 export async function DELETE(req: Request) {
+  const m = apiMessages(resolveLocale(req));
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return jsonError("Oturum açmanız gerekiyor", 401);
+  if (!user) return jsonError(m.unauthorized, 401);
 
   const id = new URL(req.url).searchParams.get("id");
-  if (!id) return jsonError("Belge kimliği eksik", 400);
+  if (!id) return jsonError(m.documents.missingId, 400);
 
   const doc = await getOwnedDocument(id, user.id);
-  if (!doc) return jsonError("Belge bulunamadı", 404);
+  if (!doc) return jsonError(m.documents.notFound, 404);
 
   // DB row first — it's the source of truth. A failed storage removal only
   // orphans a file (logged below); the reverse order could strand a row whose

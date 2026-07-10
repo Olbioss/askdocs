@@ -1,12 +1,26 @@
 import { ImageResponse } from "next/og";
+import { isLocale, routing } from "@/i18n/routing";
+import en from "@/messages/en.json";
+import tr from "@/messages/tr.json";
 
 // Social-share card in the app's brutalist system: warm paper, hard ink
 // edges, one phthalo-green accent (see app/globals.css tokens).
-export const alt = "AskDocs — belgelerinize sorun, kanıtlı cevaplar alın";
+// `alt` is a static export and can't react to the locale — keep it English.
+export const alt = "AskDocs — Ask your documents, get cited answers";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default async function Image() {
+const MESSAGES = { en, tr } as const;
+
+export default async function Image({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const m =
+    MESSAGES[isLocale(locale) ? locale : routing.defaultLocale].OgImage;
+
   return new ImageResponse(
     (
       <div
@@ -38,7 +52,7 @@ export default async function Image() {
             letterSpacing: -2,
           }}
         >
-          Belgelerinize sorun. Kanıtlı cevaplar alın.
+          {m.headline}
         </div>
         <div
           style={{
@@ -50,7 +64,7 @@ export default async function Image() {
             letterSpacing: 2,
           }}
         >
-          <div style={{ display: "flex" }}>RAG · KAYNAKLI CEVAPLAR · PGVECTOR</div>
+          <div style={{ display: "flex" }}>{m.footer}</div>
           <div
             style={{ width: 220, height: 12, backgroundColor: "#0e7a4e" }}
           />

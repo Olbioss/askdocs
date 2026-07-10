@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +15,7 @@ export function ChatComposer({
   onStop?: () => void;
   disabled?: boolean;
 }) {
+  const t = useTranslations("ChatComposer");
   const [value, setValue] = React.useState("");
 
   function submit() {
@@ -41,7 +43,7 @@ export function ChatComposer({
               }
             }}
             rows={1}
-            placeholder="Belgeleriniz hakkında bir şey sorun…"
+            placeholder={t("placeholder")}
             className="max-h-40 min-h-11 flex-1"
             disabled={disabled}
           />
@@ -52,9 +54,9 @@ export function ChatComposer({
               size="lg"
               onClick={onStop}
               className="h-11 shrink-0"
-              aria-label="Cevap oluşturmayı durdur"
+              aria-label={t("stopAria")}
             >
-              Durdur
+              {t("stop")}
               <Square className="size-3.5" />
             </Button>
           ) : (
@@ -65,14 +67,12 @@ export function ChatComposer({
               disabled={disabled || value.trim() === ""}
               className="h-11 shrink-0"
             >
-              Sor
+              {t("ask")}
               <ArrowRight className="size-4" />
             </Button>
           )}
         </div>
-        <p className="label mt-2 text-ink-40">
-          Göndermek için Enter · Yeni satır için Shift + Enter
-        </p>
+        <p className="label mt-2 text-ink-40">{t("hint")}</p>
       </div>
     </div>
   );

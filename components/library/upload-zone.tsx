@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export function UploadZone({
 }: {
   onUpload: (files: File[]) => void;
 }) {
+  const t = useTranslations("UploadZone");
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [drag, setDrag] = React.useState(false);
 
@@ -24,17 +26,14 @@ export function UploadZone({
     for (const file of Array.from(list)) {
       const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
       if (!ACCEPT_EXT.includes(ext)) {
-        toast.error(`${file.name} yüklenemez`, {
-          description:
-            ext === ".doc"
-              ? "Eski .doc biçimi desteklenmiyor — .docx veya PDF olarak kaydedin."
-              : "Yalnızca PDF, DOCX, TXT ve Markdown destekleniyor.",
+        toast.error(t("cantUpload", { name: file.name }), {
+          description: ext === ".doc" ? t("legacyDoc") : t("onlyFormats"),
         });
         continue;
       }
       if (file.size > MAX_BYTES) {
-        toast.error(`${file.name} yüklenemez`, {
-          description: "Dosyalar en fazla 10 MB olabilir.",
+        toast.error(t("cantUpload", { name: file.name }), {
+          description: t("tooLarge"),
         });
         continue;
       }
@@ -59,7 +58,7 @@ export function UploadZone({
         handleFiles(e.dataTransfer.files);
       }}
       role="region"
-      aria-label="Belge yükleme alanı"
+      aria-label={t("region")}
       className={cn(
         "relative flex flex-col items-center justify-center gap-4 border-2 border-dashed px-6 py-10 text-center transition-[background-color,border-color,box-shadow]",
         drag
@@ -77,11 +76,10 @@ export function UploadZone({
       </span>
       <div>
         <p className="font-mono text-sm font-medium uppercase tracking-[0.08em] text-ink">
-          Yüklemek için belgeleri bırakın
+          {t("dropTitle")}
         </p>
         <p className="reading mx-auto mt-1.5 max-w-sm text-sm text-ink-60">
-          PDF, DOCX, TXT veya Markdown — her biri en fazla 10 MB. Buraya
-          sürükleyin ya da cihazınızdan seçin.
+          {t("dropBody")}
         </p>
       </div>
       <Button
@@ -90,7 +88,7 @@ export function UploadZone({
         size="sm"
         onClick={() => inputRef.current?.click()}
       >
-        Dosya seç
+        {t("chooseFile")}
       </Button>
       <input
         ref={inputRef}

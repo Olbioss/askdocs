@@ -1,4 +1,6 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import {
   ArrowRight,
   BadgeCheck,
@@ -52,37 +54,37 @@ function PreviewSource({
 }
 
 function HeroPreview() {
+  const t = useTranslations("Marketing");
   return (
     <div className="w-full border border-ink bg-paper shadow-hard">
       <div className="flex items-center justify-between border-b border-ink px-4 py-2.5">
         <span className="label inline-flex items-center gap-1.5">
           <span className="size-2 bg-accent" />
-          Cevap
+          {t("previewAnswer")}
         </span>
-        <span className="label text-ink-40">2 kaynak</span>
+        <span className="label text-ink-40">{t("previewSources")}</span>
       </div>
       <div className="px-5 py-5">
-        <p className="label text-ink-40">S · Tasfiye önceliğimiz nedir?</p>
+        <p className="label text-ink-40">{t("previewQuestion")}</p>
         <p className="reading mt-3 text-[0.95rem] text-ink">
-          Yatırımcılar, adi pay sahiplerinden önce ödenen{" "}
-          <span className="font-semibold">1× katılımsız</span> tasfiye
-          önceliğine sahip
-          <Sup n={1} />. Dönem sözleşmesinde full-ratchet anti-dilüsyon koruması
-          yok
-          <Sup n={2} />.
+          {t.rich("previewBody", {
+            b: (chunks) => <span className="font-semibold">{chunks}</span>,
+            s1: () => <Sup n={1} />,
+            s2: () => <Sup n={2} />,
+          })}
         </p>
       </div>
       <div className="divide-y divide-rule border-t border-ink">
         <PreviewSource
           n={1}
-          name="Seri-A-Donem-Sozlesmesi.pdf"
-          loc="s.3"
+          name={t("previewFile")}
+          loc={t("previewLoc1")}
           score={0.92}
         />
         <PreviewSource
           n={2}
-          name="Seri-A-Donem-Sozlesmesi.pdf"
-          loc="s.4"
+          name={t("previewFile")}
+          loc={t("previewLoc2")}
           score={0.86}
         />
       </div>
@@ -90,18 +92,33 @@ function HeroPreview() {
   );
 }
 
-const MARQUEE = [
-  "Kaynaklı cevaplar",
-  "PDF",
-  "DOCX",
-  "Markdown",
-  "Sözleşmeler",
-  "Yönetim notları",
-  "Araştırma notları",
-  "Benzerlik puanı",
-  "pgvector",
-  "Gemini 2.5 Flash",
-];
+function Marquee() {
+  const t = useTranslations("Marketing");
+  const items = t.raw("marquee") as string[];
+  return (
+    <section className="overflow-hidden border-b border-ink bg-ink py-3">
+      <div className="marquee-track flex w-max">
+        {[0, 1].map((half) => (
+          <div
+            key={half}
+            className="flex shrink-0 items-center"
+            aria-hidden={half === 1}
+          >
+            {items.map((item) => (
+              <span
+                key={`${half}-${item}`}
+                className="label flex items-center px-6 text-paper/80"
+              >
+                <span className="mr-6 size-1.5 bg-accent" />
+                {item}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function Step({
   n,
@@ -131,6 +148,7 @@ function Step({
 }
 
 export default async function LandingPage() {
+  const t = await getTranslations("Marketing");
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const isAuthed = !!data?.claims;
@@ -143,35 +161,33 @@ export default async function LandingPage() {
           <div className="flex flex-col justify-center">
             <p className="label inline-flex animate-rise items-center gap-2 text-ink-60">
               <span className="size-2 bg-accent" />
-              Kaynaklı Soru-Cevap
+              {t("badge")}
             </p>
             <h1 className="mt-5 font-serif text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-7xl">
               <span
                 className="block animate-rise"
                 style={{ animationDelay: "40ms" }}
               >
-                Belgelerinize
+                {t("headline1")}
               </span>
               <span
                 className="block animate-rise"
                 style={{ animationDelay: "110ms" }}
               >
-                sorun.
+                {t("headline2")}
               </span>
               <span
                 className="block animate-rise italic text-accent"
                 style={{ animationDelay: "180ms" }}
               >
-                Kanıtını alın.
+                {t("headline3")}
               </span>
             </h1>
             <p
               className="reading mt-6 max-w-md animate-rise text-lg text-ink-70"
               style={{ animationDelay: "260ms" }}
             >
-              Sözleşmelerinizi, notlarınızı ve araştırmalarınızı yükleyin.
-              Sorunuzu doğal dille sorun. Her cevap, dayandığı pasajlara ve
-              denetleyebileceğiniz benzerlik puanlarına bağlı olarak gelir.
+              {t("heroBody")}
             </p>
             <div
               className="mt-8 flex animate-rise flex-wrap items-center gap-3"
@@ -181,24 +197,24 @@ export default async function LandingPage() {
                 <>
                   <Button asChild variant="accent" size="lg">
                     <Link href="/library">
-                      Çalışma alanını aç
+                      {t("openWorkspace")}
                       <ArrowRight className="size-4" />
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg">
-                    <Link href="/chat">Soru sor</Link>
+                    <Link href="/chat">{t("askQuestion")}</Link>
                   </Button>
                 </>
               ) : (
                 <>
                   <Button asChild variant="accent" size="lg">
                     <Link href="/signup">
-                      Hemen başla
+                      {t("getStarted")}
                       <ArrowRight className="size-4" />
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="lg">
-                    <Link href="/library">Çalışma alanını aç</Link>
+                    <Link href="/library">{t("openWorkspace")}</Link>
                   </Button>
                 </>
               )}
@@ -207,9 +223,7 @@ export default async function LandingPage() {
               className="label mt-6 animate-rise text-ink-40"
               style={{ animationDelay: "400ms" }}
             >
-              {isAuthed
-                ? "Oturum açık · Kaldığınız yerden devam edin"
-                : "Kredi kartı yok · Ücretsiz · PDF · DOCX · Markdown"}
+              {isAuthed ? t("signedInNote") : t("signedOutNote")}
             </p>
           </div>
 
@@ -223,52 +237,32 @@ export default async function LandingPage() {
       </section>
 
       {/* Marquee */}
-      <section className="overflow-hidden border-b border-ink bg-ink py-3">
-        <div className="marquee-track flex w-max">
-          {[0, 1].map((half) => (
-            <div
-              key={half}
-              className="flex shrink-0 items-center"
-              aria-hidden={half === 1}
-            >
-              {MARQUEE.map((item) => (
-                <span
-                  key={`${half}-${item}`}
-                  className="label flex items-center px-6 text-paper/80"
-                >
-                  <span className="mr-6 size-1.5 bg-accent" />
-                  {item}
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </section>
+      <Marquee />
 
       {/* How it works */}
       <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 lg:py-24">
         <div className="flex items-center gap-4">
-          <span className="label text-ink">Nasıl çalışır</span>
+          <span className="label text-ink">{t("howItWorks")}</span>
           <span className="h-px flex-1 bg-rule" />
         </div>
         <div className="mt-8 grid border border-ink md:grid-cols-3">
           <Step
             n="01"
-            title="Yükle"
+            title={t("step1Title")}
             icon={Upload}
-            body="PDF, DOCX veya Markdown bırakın. Metni çıkarır, parçalara böler ve pgvector dizinine gömeriz."
+            body={t("step1Body")}
           />
           <Step
             n="02"
-            title="Sor"
+            title={t("step2Title")}
             icon={MessageSquareText}
-            body="Sorunuzu doğal dille sorun. En yakın pasajları bulur, Gemini 2.5 Flash ile cevaplarız."
+            body={t("step2Body")}
           />
           <Step
             n="03"
-            title="Doğrula"
+            title={t("step3Title")}
             icon={BadgeCheck}
-            body="Her iddia, kaynak pasajına ve benzerlik puanına bağlanır. Güven, ama doğrula."
+            body={t("step3Body")}
           />
         </div>
       </section>
@@ -277,11 +271,11 @@ export default async function LandingPage() {
       <section className="border-y border-ink bg-accent text-accent-ink">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-5 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <h2 className="max-w-lg font-serif text-3xl font-semibold tracking-tight sm:text-4xl">
-            Belgelerinizi işe koşun.
+            {t("cta")}
           </h2>
           <Button asChild variant="default" size="lg">
             <Link href={isAuthed ? "/library" : "/signup"}>
-              {isAuthed ? "Çalışma alanını aç" : "Hemen başla"}
+              {isAuthed ? t("openWorkspace") : t("getStarted")}
               <ArrowRight className="size-4" />
             </Link>
           </Button>

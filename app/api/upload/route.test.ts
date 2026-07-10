@@ -20,11 +20,22 @@ vi.mock("@/lib/ai/extract", () => ({
 const createDocument = vi.fn();
 vi.mock("@/lib/db/documents", () => ({ createDocument: (i: unknown) => createDocument(i) }));
 const ingestDocument = vi.fn();
-vi.mock("@/lib/rag/ingest", () => ({ ingestDocument: (...a: unknown[]) => ingestDocument(...a) }));
+vi.mock("@/lib/rag/ingest", () => {
+  // Stand-in class (not importActual — the real module pulls in the db):
+  // the route imports IngestError from this same mock, so instanceof works.
+  class IngestError extends Error {
+    constructor(public code: "no_text" | "no_chunks") {
+      super(code);
+      this.name = "IngestError";
+    }
+  }
+  return { IngestError, ingestDocument: (...a: unknown[]) => ingestDocument(...a) };
+});
 const checkRateLimit = vi.fn();
 vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: (...a: unknown[]) => checkRateLimit(...a) }));
 
 import { POST } from "@/app/api/upload/route";
+import { IngestError } from "@/lib/rag/ingest";
 
 function reqWith(file: unknown) {
   const form = new FormData();
@@ -136,6 +147,32 @@ describe("POST /api/upload", () => {
       id: "doc-1",
       status: "failed",
       error: "bad",
+    });
+  });
+
+  it("localizes known ingest failures via their code (default en)", async () => {
+    ingestDocument.mockRejectedValue(new IngestError("no_text"));
+    const res = await POST(reqWith(pdf()));
+    expect(res.status).toBe(500);
+    expect(await res.json()).toMatchObject({
+      id: "doc-1",
+      status: "failed",
+      error: expect.stringMatching(/no text could be extracted/i),
+    });
+  });
+
+  it("localizes known ingest failures in Turkish with x-locale", async () => {
+    ingestDocument.mockRejectedValue(new IngestError("no_text"));
+    const form = new FormData();
+    form.append("file", pdf());
+    const req = {
+      formData: async () => form,
+      headers: new Headers({ "x-locale": "tr" }),
+    } as unknown as Request;
+    const res = await POST(req);
+    expect(res.status).toBe(500);
+    expect(await res.json()).toMatchObject({
+      error: expect.stringMatching(/metin çıkarılamadı/i),
     });
   });
 });

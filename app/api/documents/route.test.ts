@@ -19,6 +19,8 @@ vi.mock("@/lib/db/documents", () => ({
 
 import { GET, DELETE } from "@/app/api/documents/route";
 
+const getReq = () =>
+  ({ url: "http://localhost/api/documents" } as unknown as Request);
 const delReq = (id?: string) =>
   ({ url: `http://localhost/api/documents${id ? `?id=${id}` : ""}` } as unknown as Request);
 
@@ -32,7 +34,7 @@ beforeEach(() => {
 describe("GET /api/documents", () => {
   it("401 when signed out", async () => {
     getUser.mockResolvedValue({ data: { user: null } });
-    expect((await GET()).status).toBe(401);
+    expect((await GET(getReq())).status).toBe(401);
   });
 
   it("maps rows to the Document shape", async () => {
@@ -45,7 +47,7 @@ describe("GET /api/documents", () => {
         chunkCount: 3,
       },
     ]);
-    const res = await GET();
+    const res = await GET(getReq());
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual([
       {

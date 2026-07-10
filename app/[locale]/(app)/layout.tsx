@@ -1,13 +1,14 @@
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
+import type { Locale } from "@/i18n/routing";
 import { AppHeader } from "@/components/app-header";
 import { AuthProvider } from "@/components/auth-provider";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+  params,
+}: LayoutProps<"/[locale]">) {
+  const { locale } = await params;
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
@@ -15,10 +16,10 @@ export default async function AppLayout({
   // Defense in depth: the proxy redirects too, but enforce here as well since
   // layouts run server-side close to the data.
   if (!claims) {
-    redirect("/login");
+    redirect({ href: "/login", locale: locale as Locale });
   }
 
-  const user = { id: claims.sub, email: claims.email ?? "" };
+  const user = { id: claims!.sub, email: claims!.email ?? "" };
 
   return (
     <AuthProvider initialUser={user}>

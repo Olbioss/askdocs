@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import { FileText, MessagesSquare, User } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { useAuth } from "@/components/auth-provider";
 import {
   DropdownMenu,
@@ -16,14 +17,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-const NAV = [
-  { href: "/library", label: "Kitaplık", icon: FileText },
-  { href: "/chat", label: "Sohbet", icon: MessagesSquare },
-];
-
 export function AppHeader() {
+  const t = useTranslations("AppHeader");
+  // Locale-free path, so startsWith("/library") works under /tr too.
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+
+  const nav = [
+    { href: "/library", label: t("library"), icon: FileText },
+    { href: "/chat", label: t("chat"), icon: MessagesSquare },
+  ];
 
   return (
     <header className="z-40 shrink-0 border-b border-ink bg-paper">
@@ -33,7 +36,7 @@ export function AppHeader() {
             <Logo />
           </div>
           <nav className="flex items-stretch">
-            {NAV.map(({ href, label, icon: Icon }) => {
+            {nav.map(({ href, label, icon: Icon }) => {
               const active = pathname.startsWith(href);
               return (
                 <Link
@@ -56,11 +59,12 @@ export function AppHeader() {
         </div>
 
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <ThemeToggle />
           <DropdownMenu>
             <DropdownMenuTrigger
               className="grid size-9 place-items-center border border-ink bg-paper text-ink transition-colors hover:bg-ink hover:text-paper focus-visible:outline-none data-[state=open]:bg-ink data-[state=open]:text-paper"
-              aria-label="Hesap menüsü"
+              aria-label={t("accountMenu")}
             >
               {user ? (
                 <span className="font-mono text-xs font-semibold uppercase">
@@ -72,20 +76,20 @@ export function AppHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuLabel>
-                {user ? user.email : "Oturum açılmadı"}
+                {user ? user.email : t("notSignedIn")}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {user ? (
                 <DropdownMenuItem onSelect={() => signOut()}>
-                  Çıkış yap
+                  {t("signOut")}
                 </DropdownMenuItem>
               ) : (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/login">Giriş yap</Link>
+                    <Link href="/login">{t("signIn")}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/signup">Hesap oluştur</Link>
+                    <Link href="/signup">{t("signUp")}</Link>
                   </DropdownMenuItem>
                 </>
               )}

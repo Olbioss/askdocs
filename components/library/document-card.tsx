@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { FileText, MessageSquareText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { StatusBadge } from "./status-badge";
 import { fileExt, formatBytes, relativeTime } from "@/lib/format";
+import type { Locale } from "@/i18n/routing";
 import type { Document } from "@/lib/types";
 
 export function DocumentCard({
@@ -27,12 +29,14 @@ export function DocumentCard({
   onDelete: (id: string) => void;
   style?: React.CSSProperties;
 }) {
+  const t = useTranslations("DocumentCard");
+  const locale = useLocale() as Locale;
   const [open, setOpen] = React.useState(false);
 
   const meta = [
-    relativeTime(doc.createdAt),
-    doc.pages ? `${doc.pages} sayfa` : null,
-    doc.chunkCount ? `${doc.chunkCount} parça` : null,
+    relativeTime(doc.createdAt, locale),
+    doc.pages ? t("pages", { count: doc.pages }) : null,
+    doc.chunkCount ? t("chunks", { count: doc.chunkCount }) : null,
   ]
     .filter(Boolean)
     .join("  ·  ");
@@ -71,10 +75,10 @@ export function DocumentCard({
             >
               <Link
                 href={`/chat?doc=${doc.id}`}
-                aria-label={`${doc.filename} hakkında soru sor`}
+                aria-label={t("askAbout", { name: doc.filename })}
               >
                 <MessageSquareText className="size-3.5" />
-                Sor
+                {t("ask")}
               </Link>
             </Button>
           )}
@@ -84,25 +88,27 @@ export function DocumentCard({
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                aria-label={`${doc.filename} belgesini sil`}
+                aria-label={t("deleteAria", { name: doc.filename })}
               >
                 <Trash2 className="size-3.5" />
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Belgeyi sil</DialogTitle>
+                <DialogTitle>{t("deleteTitle")}</DialogTitle>
                 <DialogDescription>
-                  Bu işlem{" "}
-                  <span className="font-mono text-ink">{doc.filename}</span>{" "}
-                  belgesini ve tüm dizinlenmiş parçalarını kalıcı olarak
-                  kaldırır. Geri alınamaz.
+                  {t.rich("deleteBody", {
+                    name: doc.filename,
+                    n: (chunks) => (
+                      <span className="font-mono text-ink">{chunks}</span>
+                    ),
+                  })}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
                   <Button variant="outline" size="sm">
-                    Vazgeç
+                    {t("cancel")}
                   </Button>
                 </DialogClose>
                 <Button
@@ -113,7 +119,7 @@ export function DocumentCard({
                     onDelete(doc.id);
                   }}
                 >
-                  Sil
+                  {t("delete")}
                 </Button>
               </DialogFooter>
             </DialogContent>

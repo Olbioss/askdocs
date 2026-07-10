@@ -1,38 +1,38 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/logo";
 
-const COLUMNS = [
-  {
-    title: "Ürün",
-    links: [
-      { label: "Kitaplık", href: "/library" },
-      { label: "Sohbet", href: "/chat" },
-      { label: "Hemen başla", href: "/signup" },
-    ],
-  },
-  {
-    title: "Şirket",
-    links: [
-      { label: "Hakkında", href: "#" },
-      { label: "Gizlilik", href: "#" },
-      { label: "Koşullar", href: "#" },
-    ],
-  },
-];
-
 export function SiteFooter() {
+  const t = useTranslations("SiteFooter");
+
+  const columns = [
+    {
+      title: t("product"),
+      links: [
+        { label: t("library"), href: "/library" },
+        { label: t("chat"), href: "/chat" },
+        { label: t("getStarted"), href: "/signup" },
+      ],
+    },
+    {
+      title: t("company"),
+      links: [
+        { label: t("about"), href: "#" },
+        { label: t("privacy"), href: "#" },
+        { label: t("terms"), href: "#" },
+      ],
+    },
+  ];
+
   return (
     <footer className="border-t border-ink">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 py-12 sm:flex-row sm:items-start sm:justify-between sm:px-8">
         <div className="max-w-xs">
           <Logo />
-          <p className="reading mt-4 text-sm text-ink-60">
-            Belgelerinize doğal dille sorun; kaynak gösterilen pasajlara
-            dayanan cevaplar alın.
-          </p>
+          <p className="reading mt-4 text-sm text-ink-60">{t("tagline")}</p>
         </div>
         <div className="grid grid-cols-2 gap-x-14 gap-y-3">
-          {COLUMNS.map((col) => (
+          {columns.map((col) => (
             <div key={col.title}>
               <p className="label mb-3 text-ink-40">{col.title}</p>
               <ul className="space-y-2">

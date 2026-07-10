@@ -56,13 +56,17 @@ describe("buildSystemPrompt", () => {
     const p = buildSystemPrompt([]);
     expect(p).toMatch(/no relevant context/i);
     expect(p).toMatch(/do not/i);
-    expect(p).toMatch(/türkçe/i);
+    expect(p).toMatch(/answer in english/i);
   });
   it("numbers the context with source + page", () => {
     const p = buildSystemPrompt([chunk()]);
     expect(p).toContain("[1] (source: a.pdf, page 2)");
     expect(p).toContain("ctx");
-    expect(p).toMatch(/türkçe/i);
+    expect(p).toMatch(/answer in english/i);
+  });
+  it("switches the answer language with the locale", () => {
+    expect(buildSystemPrompt([], "tr")).toMatch(/türkçe/i);
+    expect(buildSystemPrompt([chunk()], "tr")).toMatch(/türkçe/i);
   });
 });
 
@@ -100,7 +104,7 @@ describe("POST /api/chat", () => {
     } as unknown as Request;
     const res = await POST(req);
     expect(res.status).toBe(400);
-    expect(await res.json()).toMatchObject({ error: expect.stringMatching(/geçersiz/i) });
+    expect(await res.json()).toMatchObject({ error: expect.stringMatching(/invalid/i) });
   });
 
   it("400 when question is not a string", async () => {
@@ -109,6 +113,17 @@ describe("POST /api/chat", () => {
 
   it("400 when question exceeds the length cap", async () => {
     const res = await POST(jsonReq({ question: "x".repeat(4001) }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ error: expect.stringMatching(/too long/i) });
+  });
+
+  it("localizes error bodies via the x-locale header", async () => {
+    const req = {
+      json: async () => ({ question: "x".repeat(4001) }),
+      signal: new AbortController().signal,
+      headers: new Headers({ "x-locale": "tr" }),
+    } as unknown as Request;
+    const res = await POST(req);
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ error: expect.stringMatching(/uzun/i) });
   });
@@ -130,7 +145,7 @@ describe("POST /api/chat", () => {
     retrieveChunks.mockRejectedValue(new Error("no key"));
     const res = await POST(jsonReq({ question: "hi" }));
     expect(res.status).toBe(500);
-    expect(await res.json()).toMatchObject({ error: "Arama başarısız oldu", detail: expect.stringContaining("no key") });
+    expect(await res.json()).toMatchObject({ error: "Search failed", detail: expect.stringContaining("no key") });
   });
 
   const docId = "5a4e1c9e-2f7b-4d3a-9c1e-8b6f0a2d4e71";

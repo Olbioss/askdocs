@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+import { getPathname, Link, useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,8 @@ export function AuthForm({
   initialError?: string;
 }) {
   const isSignup = mode === "signup";
+  const t = useTranslations("Auth");
+  const locale = useLocale();
   const router = useRouter();
   const supabase = React.useMemo(() => createClient(), []);
 
@@ -40,8 +42,12 @@ export function AuthForm({
   const [error, setError] = React.useState<string | null>(initialError ?? null);
   const [sent, setSent] = React.useState(false);
 
-  const callbackUrl = (origin: string) =>
-    `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`;
+  // The callback route redirects to `next` verbatim, so bake the locale
+  // prefix in here (getPathname → "/library" for en, "/tr/library" for tr).
+  const callbackUrl = (origin: string) => {
+    const next = getPathname({ href: redirectTo, locale });
+    return `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
+  };
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -71,7 +77,7 @@ export function AuthForm({
           setSent(true);
           return;
         }
-        toast.success("Hesap oluşturuldu");
+        toast.success(t("createdToast"));
         router.push(redirectTo);
         router.refresh();
       } else {
@@ -80,12 +86,12 @@ export function AuthForm({
           password,
         });
         if (error) throw error;
-        toast.success("Giriş yapıldı");
+        toast.success(t("signedInToast"));
         router.push(redirectTo);
         router.refresh();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Bir şeyler ters gitti");
+      setError(err instanceof Error ? err.message : t("genericError"));
     } finally {
       setPending(false);
     }
@@ -104,16 +110,13 @@ export function AuthForm({
   if (sent) {
     return (
       <div className="animate-rise border border-ink bg-paper p-6 shadow-hard">
-        <p className="label text-ink-40">Gelen kutunuza bakın</p>
+        <p className="label text-ink-40">{t("checkInbox")}</p>
         <h1 className="mt-2 font-serif text-2xl font-semibold tracking-tight text-ink">
-          E-postanızı doğrulayın
+          {t("verifyEmail")}
         </h1>
-        <p className="reading mt-3 text-sm text-ink-70">
-          Hesabınızı tamamlamak için bir doğrulama bağlantısı gönderdik. Açın,
-          otomatik olarak giriş yapmış olacaksınız.
-        </p>
+        <p className="reading mt-3 text-sm text-ink-70">{t("verifySent")}</p>
         <Button asChild variant="outline" size="lg" className="mt-6 w-full">
-          <Link href="/login">Girişe dön</Link>
+          <Link href="/login">{t("backToLogin")}</Link>
         </Button>
       </div>
     );
@@ -122,10 +125,10 @@ export function AuthForm({
   return (
     <div className="animate-rise border border-ink bg-paper p-6 shadow-hard">
       <p className="label text-ink-40">
-        {isSignup ? "Hesap oluştur" : "Tekrar hoş geldiniz"}
+        {isSignup ? t("signupLabel") : t("welcomeBack")}
       </p>
       <h1 className="mt-2 font-serif text-2xl font-semibold tracking-tight text-ink">
-        {isSignup ? "Belgelerinize sormaya başlayın" : "AskDocs'a giriş yapın"}
+        {isSignup ? t("signupTitle") : t("loginTitle")}
       </h1>
 
       {error && (
@@ -136,20 +139,20 @@ export function AuthForm({
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         {isSignup && (
-          <Field label="Ad">
+          <Field label={t("name")}>
             <Input name="name" placeholder="Ada Lovelace" autoComplete="name" />
           </Field>
         )}
-        <Field label="E-posta">
+        <Field label={t("email")}>
           <Input
             type="email"
             name="email"
-            placeholder="siz@sirket.com"
+            placeholder={t("emailPlaceholder")}
             autoComplete="email"
             required
           />
         </Field>
-        <Field label="Şifre">
+        <Field label={t("password")}>
           <Input
             type="password"
             name="password"
@@ -159,7 +162,7 @@ export function AuthForm({
             required
           />
           {isSignup && (
-            <p className="label mt-1.5 text-ink-40">En az 6 karakter</p>
+            <p className="label mt-1.5 text-ink-40">{t("minChars")}</p>
           )}
         </Field>
         <Button
@@ -171,17 +174,17 @@ export function AuthForm({
         >
           {pending
             ? isSignup
-              ? "Oluşturuluyor…"
-              : "Giriş yapılıyor…"
+              ? t("creating")
+              : t("signingIn")
             : isSignup
-              ? "Hesap oluştur"
-              : "Giriş yap"}
+              ? t("createAccount")
+              : t("signIn")}
         </Button>
       </form>
 
       <div className="my-5 flex items-center gap-3">
         <span className="h-px flex-1 bg-rule" />
-        <span className="label text-ink-40">veya</span>
+        <span className="label text-ink-40">{t("or")}</span>
         <span className="h-px flex-1 bg-rule" />
       </div>
 
@@ -194,7 +197,7 @@ export function AuthForm({
           onClick={() => handleOAuth("google")}
           disabled={pending}
         >
-          Google ile devam et
+          {t("continueWithGoogle")}
         </Button>
         <Button
           type="button"
@@ -204,29 +207,29 @@ export function AuthForm({
           onClick={() => handleOAuth("github")}
           disabled={pending}
         >
-          GitHub ile devam et
+          {t("continueWithGithub")}
         </Button>
       </div>
 
       <p className="label mt-6 text-center text-ink-60">
         {isSignup ? (
           <>
-            Hesabınız var mı?{" "}
+            {t("haveAccount")}{" "}
             <Link
               href="/login"
               className="text-accent underline-offset-4 hover:underline"
             >
-              Giriş yap
+              {t("signIn")}
             </Link>
           </>
         ) : (
           <>
-            Yeni misiniz?{" "}
+            {t("newHere")}{" "}
             <Link
               href="/signup"
               className="text-accent underline-offset-4 hover:underline"
             >
-              Hesap oluştur
+              {t("createAccount")}
             </Link>
           </>
         )}

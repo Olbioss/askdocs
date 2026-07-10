@@ -22,19 +22,39 @@ describe("relativeTime", () => {
 
   const ago = (ms: number) => new Date(Date.now() - ms).toISOString();
 
-  it("just now under 30s", () => expect(relativeTime(ago(20_000))).toBe("şimdi"));
-  it("rounds 30s up to 1 minute", () => expect(relativeTime(ago(30_000))).toBe("1 dk önce"));
-  it("minutes", () => expect(relativeTime(ago(5 * 60_000))).toBe("5 dk önce"));
-  it("hours", () => expect(relativeTime(ago(2 * 3_600_000))).toBe("2 sa önce"));
-  it("days", () => expect(relativeTime(ago(3 * 86_400_000))).toBe("3 gün önce"));
-  it("6 days still shows days", () => expect(relativeTime(ago(6 * 86_400_000))).toBe("6 gün önce"));
-  it("absolute Turkish-locale date beyond a week", () => {
-    const iso = ago(30 * 86_400_000);
-    const expected = new Date(iso).toLocaleDateString("tr-TR", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+  describe("english (default)", () => {
+    it("just now under 30s", () => expect(relativeTime(ago(20_000))).toBe("now"));
+    it("rounds 30s up to 1 minute", () => expect(relativeTime(ago(30_000))).toBe("1 min ago"));
+    it("minutes", () => expect(relativeTime(ago(5 * 60_000))).toBe("5 min ago"));
+    it("hours", () => expect(relativeTime(ago(2 * 3_600_000))).toBe("2 hr ago"));
+    it("days", () => expect(relativeTime(ago(3 * 86_400_000))).toBe("3 days ago"));
+    it("6 days still shows days", () => expect(relativeTime(ago(6 * 86_400_000))).toBe("6 days ago"));
+    it("absolute en-US date beyond a week", () => {
+      const iso = ago(30 * 86_400_000);
+      const expected = new Date(iso).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      expect(relativeTime(iso)).toBe(expected);
     });
-    expect(relativeTime(iso)).toBe(expected);
+  });
+
+  describe("turkish", () => {
+    it("just now under 30s", () => expect(relativeTime(ago(20_000), "tr")).toBe("şimdi"));
+    it("rounds 30s up to 1 minute", () => expect(relativeTime(ago(30_000), "tr")).toBe("1 dk önce"));
+    it("minutes", () => expect(relativeTime(ago(5 * 60_000), "tr")).toBe("5 dk önce"));
+    it("hours", () => expect(relativeTime(ago(2 * 3_600_000), "tr")).toBe("2 sa önce"));
+    it("days", () => expect(relativeTime(ago(3 * 86_400_000), "tr")).toBe("3 gün önce"));
+    it("6 days still shows days", () => expect(relativeTime(ago(6 * 86_400_000), "tr")).toBe("6 gün önce"));
+    it("absolute Turkish-locale date beyond a week", () => {
+      const iso = ago(30 * 86_400_000);
+      const expected = new Date(iso).toLocaleDateString("tr-TR", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+      expect(relativeTime(iso, "tr")).toBe(expected);
+    });
   });
 });

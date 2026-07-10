@@ -1,9 +1,11 @@
 import { SUPPORTED_MIMES } from "@/lib/ai/extract";
 import { createDocument } from "@/lib/db/documents";
-import { ingestDocument } from "@/lib/rag/ingest";
+import { IngestError, ingestDocument } from "@/lib/rag/ingest";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { jsonError } from "@/lib/http";
+import { resolveLocale } from "@/lib/i18n/get-locale";
+import { apiMessages, fmt } from "@/lib/i18n/api-messages";
 import { NextResponse } from "next/server";
 
 const UPLOADS_PER_HOUR = 20;
@@ -28,37 +30,36 @@ export function sanitizeForStoragePath(name: string): string {
 }
 
 export async function POST(req: Request) {
+  const locale = resolveLocale(req);
+  const m = apiMessages(locale);
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return jsonError("Oturum açmanız gerekiyor", 401);
+  if (!user) return jsonError(m.unauthorized, 401);
   const userId = user.id;
 
   if (!(await checkRateLimit(userId, "upload", UPLOADS_PER_HOUR, 3_600_000))) {
     return jsonError(
-      `Yükleme sınırına ulaşıldı (saatte ${UPLOADS_PER_HOUR}) — biraz sonra tekrar deneyin.`,
+      fmt(m.upload.rateLimited, { limit: UPLOADS_PER_HOUR }),
       429,
     );
   }
 
   const form = await req.formData();
   const file = form.get("file");
-  if (!(file instanceof File)) return jsonError("Dosya seçilmedi", 400);
+  if (!(file instanceof File)) return jsonError(m.upload.noFile, 400);
 
   // Friendly rejection for legacy .doc — MUST come before the SUPPORTED_MIMES allow-list below, or the bland "Unsupported type" 415 wins.
   if (file.type === "application/msword") {
-    return jsonError(
-      "Eski .doc biçimi desteklenmiyor — lütfen .docx veya PDF olarak kaydedip yeniden yükleyin.",
-      415,
-    );
+    return jsonError(m.upload.legacyDoc, 415);
   }
   if (!SUPPORTED_MIMES.includes(file.type)) {
-    return jsonError(`Desteklenmeyen dosya türü: ${file.type}`, 415);
+    return jsonError(fmt(m.upload.unsupportedType, { type: file.type }), 415);
   }
   // Check size BEFORE reading the file into memory — File.size needs no read.
-  if (file.size > MAX_BYTES)
-    return jsonError("Dosya çok büyük (en fazla 10 MB)", 413);
+  if (file.size > MAX_BYTES) return jsonError(m.upload.tooLarge, 413);
 
   const buffer = await file.arrayBuffer();
 
@@ -66,7 +67,8 @@ export async function POST(req: Request) {
   const { error: upErr } = await supabase.storage
     .from("documents")
     .upload(filePath, buffer, { contentType: file.type });
-  if (upErr) return jsonError(`Dosya depolanamadı: ${upErr.message}`, 500);
+  if (upErr)
+    return jsonError(fmt(m.upload.storeFailed, { message: upErr.message }), 500);
 
   let doc;
   try {
@@ -74,7 +76,7 @@ export async function POST(req: Request) {
   } catch (err) {
     // don't orphan the stored object when no row references it
     await supabase.storage.from("documents").remove([filePath]);
-    return jsonError(`Belge kaydedilemedi: ${String(err)}`, 500);
+    return jsonError(fmt(m.upload.saveFailed, { message: String(err) }), 500);
   }
 
   // Ingestion is awaited for MVP simplicity; move to a background job once large files approach the serverless timeout.
@@ -88,8 +90,17 @@ export async function POST(req: Request) {
       chunkCount,
     });
   } catch (err) {
-    // err.message, not String(err) — the "Error: " prefix would leak into toasts
-    const message = err instanceof Error ? err.message : String(err);
+    // Known ingest failures carry a code → localized message; anything else
+    // uses err.message, not String(err) — the "Error: " prefix would leak
+    // into toasts.
+    const message =
+      err instanceof IngestError
+        ? err.code === "no_text"
+          ? m.upload.noText
+          : m.upload.processFailed
+        : err instanceof Error
+          ? err.message
+          : String(err);
     return jsonError(message, 500, { id: doc.id, status: "failed" });
   }
 }

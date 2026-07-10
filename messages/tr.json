@@ -1,0 +1,251 @@
+{
+  "Metadata": {
+    "title": "AskDocs — Belgelerinize sorun, kanıtlı cevaplar alın",
+    "description": "Kaynak destekli (RAG) bir soru-cevap çalışma alanı. Belgelerinizi yükleyin, sorularınızı sorun, kaynak gösteren cevaplar alın.",
+    "libraryTitle": "Kitaplık — AskDocs",
+    "chatTitle": "Sohbet — AskDocs",
+    "loginTitle": "Giriş yap — AskDocs",
+    "signupTitle": "Hesap oluştur — AskDocs"
+  },
+  "Logo": {
+    "home": "AskDocs ana sayfa"
+  },
+  "ThemeToggle": {
+    "toLight": "Açık temaya geç",
+    "toDark": "Koyu temaya geç"
+  },
+  "LanguageSwitcher": {
+    "label": "Dil seçin",
+    "en": "English",
+    "tr": "Türkçe"
+  },
+  "MarketingHeader": {
+    "signOut": "Çıkış yap",
+    "openApp": "Uygulamayı aç",
+    "signIn": "Giriş yap",
+    "getStarted": "Hemen başla"
+  },
+  "AppHeader": {
+    "library": "Kitaplık",
+    "chat": "Sohbet",
+    "accountMenu": "Hesap menüsü",
+    "notSignedIn": "Oturum açılmadı",
+    "signOut": "Çıkış yap",
+    "signIn": "Giriş yap",
+    "signUp": "Hesap oluştur"
+  },
+  "SiteFooter": {
+    "tagline": "Belgelerinize doğal dille sorun; kaynak gösterilen pasajlara dayanan cevaplar alın.",
+    "product": "Ürün",
+    "library": "Kitaplık",
+    "chat": "Sohbet",
+    "getStarted": "Hemen başla",
+    "company": "Şirket",
+    "about": "Hakkında",
+    "privacy": "Gizlilik",
+    "terms": "Koşullar"
+  },
+  "Marketing": {
+    "badge": "Kaynaklı Soru-Cevap",
+    "headline1": "Belgelerinize",
+    "headline2": "sorun.",
+    "headline3": "Kanıtını alın.",
+    "heroBody": "Sözleşmelerinizi, notlarınızı ve araştırmalarınızı yükleyin. Sorunuzu doğal dille sorun. Her cevap, dayandığı pasajlara ve denetleyebileceğiniz benzerlik puanlarına bağlı olarak gelir.",
+    "openWorkspace": "Çalışma alanını aç",
+    "askQuestion": "Soru sor",
+    "getStarted": "Hemen başla",
+    "signedInNote": "Oturum açık · Kaldığınız yerden devam edin",
+    "signedOutNote": "Kredi kartı yok · Ücretsiz · PDF · DOCX · Markdown",
+    "previewAnswer": "Cevap",
+    "previewSources": "2 kaynak",
+    "previewQuestion": "S · Tasfiye önceliğimiz nedir?",
+    "previewBody": "Yatırımcılar, adi pay sahiplerinden önce ödenen <b>1× katılımsız</b> tasfiye önceliğine sahip<s1></s1>. Dönem sözleşmesinde full-ratchet anti-dilüsyon koruması yok<s2></s2>.",
+    "previewFile": "Seri-A-Donem-Sozlesmesi.pdf",
+    "previewLoc1": "s.3",
+    "previewLoc2": "s.4",
+    "marquee": [
+      "Kaynaklı cevaplar",
+      "PDF",
+      "DOCX",
+      "Markdown",
+      "Sözleşmeler",
+      "Yönetim notları",
+      "Araştırma notları",
+      "Benzerlik puanı",
+      "pgvector",
+      "Gemini 2.5 Flash"
+    ],
+    "howItWorks": "Nasıl çalışır",
+    "step1Title": "Yükle",
+    "step1Body": "PDF, DOCX veya Markdown bırakın. Metni çıkarır, parçalara böler ve pgvector dizinine gömeriz.",
+    "step2Title": "Sor",
+    "step2Body": "Sorunuzu doğal dille sorun. En yakın pasajları bulur, Gemini 2.5 Flash ile cevaplarız.",
+    "step3Title": "Doğrula",
+    "step3Body": "Her iddia, kaynak pasajına ve benzerlik puanına bağlanır. Güven, ama doğrula.",
+    "cta": "Belgelerinizi işe koşun."
+  },
+  "Auth": {
+    "createdToast": "Hesap oluşturuldu",
+    "signedInToast": "Giriş yapıldı",
+    "genericError": "Bir şeyler ters gitti",
+    "checkInbox": "Gelen kutunuza bakın",
+    "verifyEmail": "E-postanızı doğrulayın",
+    "verifySent": "Hesabınızı tamamlamak için bir doğrulama bağlantısı gönderdik. Açın, otomatik olarak giriş yapmış olacaksınız.",
+    "backToLogin": "Girişe dön",
+    "signupLabel": "Hesap oluştur",
+    "welcomeBack": "Tekrar hoş geldiniz",
+    "signupTitle": "Belgelerinize sormaya başlayın",
+    "loginTitle": "AskDocs'a giriş yapın",
+    "name": "Ad",
+    "email": "E-posta",
+    "emailPlaceholder": "siz@sirket.com",
+    "password": "Şifre",
+    "minChars": "En az 6 karakter",
+    "creating": "Oluşturuluyor…",
+    "signingIn": "Giriş yapılıyor…",
+    "createAccount": "Hesap oluştur",
+    "signIn": "Giriş yap",
+    "or": "veya",
+    "continueWithGoogle": "Google ile devam et",
+    "continueWithGithub": "GitHub ile devam et",
+    "haveAccount": "Hesabınız var mı?",
+    "newHere": "Yeni misiniz?"
+  },
+  "AuthProvider": {
+    "signedOut": "Çıkış yapıldı"
+  },
+  "Library": {
+    "workspace": "Çalışma alanı",
+    "title": "Kitaplık",
+    "loading": "Yükleniyor…",
+    "stats": "{total} belge · {ready} sorgulanmaya hazır",
+    "documents": "Belgeler",
+    "emptyTitle": "Henüz belge yok",
+    "emptyBody": "Dizine eklemek için yukarıdan bir dosya yükleyin. Hazır olduğunda sohbete geçip soru sormaya başlayabilirsiniz.",
+    "loadFailed": "Belgeler yüklenemedi",
+    "indexed": "{name} dizine eklendi",
+    "readyToQuery": "Sohbette sorgulanmaya hazır.",
+    "uploadFailed": "{name} yüklenemedi",
+    "deleted": "Silindi: {name}",
+    "deleteFailed": "Silme başarısız oldu",
+    "fallbackDoc": "belge"
+  },
+  "UploadZone": {
+    "region": "Belge yükleme alanı",
+    "cantUpload": "{name} yüklenemez",
+    "legacyDoc": "Eski .doc biçimi desteklenmiyor — .docx veya PDF olarak kaydedin.",
+    "onlyFormats": "Yalnızca PDF, DOCX, TXT ve Markdown destekleniyor.",
+    "tooLarge": "Dosyalar en fazla 10 MB olabilir.",
+    "dropTitle": "Yüklemek için belgeleri bırakın",
+    "dropBody": "PDF, DOCX, TXT veya Markdown — her biri en fazla 10 MB. Buraya sürükleyin ya da cihazınızdan seçin.",
+    "chooseFile": "Dosya seç"
+  },
+  "DocumentCard": {
+    "pages": "{count} sayfa",
+    "chunks": "{count} parça",
+    "ask": "Sor",
+    "askAbout": "{name} hakkında soru sor",
+    "deleteAria": "{name} belgesini sil",
+    "deleteTitle": "Belgeyi sil",
+    "deleteBody": "Bu işlem <n>{name}</n> belgesini ve tüm dizinlenmiş parçalarını kalıcı olarak kaldırır. Geri alınamaz.",
+    "cancel": "Vazgeç",
+    "delete": "Sil"
+  },
+  "StatusBadge": {
+    "ready": "Hazır",
+    "processing": "İşleniyor",
+    "failed": "Başarısız"
+  },
+  "Chat": {
+    "sourcesPanelAria": "Kaynak panelini aç/kapat ({count})",
+    "sources": "Kaynaklar",
+    "new": "Yeni",
+    "stopped": "Durduruldu.",
+    "errorFallback": "Cevap alınırken bir şeyler ters gitti.",
+    "incomplete": "Cevap tamamlanamadı"
+  },
+  "ChatEmpty": {
+    "title": "Belgelerinize sorun.",
+    "body": "Sorunuzu doğal dille sorun. Her cevap, dayandığı pasajları ve denetleyebileceğiniz bir benzerlik puanını kaynak gösterir.",
+    "ask": "Sor",
+    "suggestions": [
+      "Dönem sözleşmesindeki değerleme ve tasfiye önceliği nedir?",
+      "İşletme geçen çeyrekte nasıl performans gösterdi?",
+      "Çalışanların yıllık izni ne kadar, uzaktan çalışma politikası ne?",
+      "Hibrit arama halüsinasyonları neden azaltır?"
+    ]
+  },
+  "ChatComposer": {
+    "placeholder": "Belgeleriniz hakkında bir şey sorun…",
+    "stopAria": "Cevap oluşturmayı durdur",
+    "stop": "Durdur",
+    "ask": "Sor",
+    "hint": "Göndermek için Enter · Yeni satır için Shift + Enter"
+  },
+  "ChatMessage": {
+    "you": "Siz",
+    "searching": "Kaynaklar aranıyor…",
+    "retry": "Tekrar dene",
+    "sources": "Kaynaklar"
+  },
+  "ScopeSelect": {
+    "all": "Tüm kaynaklar",
+    "aria": "Hangi belgelerde aranacağını seçin",
+    "scopeLabel": "Arama kapsamı",
+    "none": "Henüz kaynak yok — Kitaplık'tan yükleyin"
+  },
+  "CitationsPanel": {
+    "sources": "Kaynaklar",
+    "close": "Kaynakları kapat",
+    "empty": "Bir cevabın kaynakları burada görünecek."
+  },
+  "CitationCard": {
+    "match": "Eşleşme",
+    "pageAbbr": "s.{page}"
+  },
+  "ErrorPage": {
+    "label": "Hata",
+    "title": "Bir şeyler ters gitti.",
+    "body": "Beklenmedik bir hata sayfayı kesintiye uğrattı. Belgeleriniz güvende — tekrar deneyin.",
+    "retry": "Tekrar dene"
+  },
+  "NotFound": {
+    "title": "Bu sayfa kitaplıkta yok.",
+    "body": "Adres yanlış yazılmış ya da sayfa taşınmış olabilir.",
+    "home": "Ana sayfaya dön"
+  },
+  "OgImage": {
+    "headline": "Belgelerinize sorun. Kanıtlı cevaplar alın.",
+    "footer": "RAG · KAYNAKLI CEVAPLAR · PGVECTOR"
+  },
+  "Api": {
+    "unauthorized": "Oturum açmanız gerekiyor",
+    "chat": {
+      "rateLimited": "Soru sınırına ulaşıldı (saatte {limit}) — biraz sonra tekrar deneyin.",
+      "invalidBody": "Geçersiz istek gövdesi",
+      "emptyQuestion": "Soru girilmedi",
+      "tooLong": "Soru çok uzun (en fazla {max} karakter)",
+      "invalidDocId": "Geçersiz belge kimliği",
+      "searchFailed": "Arama başarısız oldu",
+      "generationFailed": "Cevap oluşturulamadı"
+    },
+    "upload": {
+      "rateLimited": "Yükleme sınırına ulaşıldı (saatte {limit}) — biraz sonra tekrar deneyin.",
+      "noFile": "Dosya seçilmedi",
+      "legacyDoc": "Eski .doc biçimi desteklenmiyor — lütfen .docx veya PDF olarak kaydedip yeniden yükleyin.",
+      "unsupportedType": "Desteklenmeyen dosya türü: {type}",
+      "tooLarge": "Dosya çok büyük (en fazla 10 MB)",
+      "storeFailed": "Dosya depolanamadı: {message}",
+      "saveFailed": "Belge kaydedilemedi: {message}",
+      "noText": "Belgeden metin çıkarılamadı — dosya boş ya da salt görüntü olabilir",
+      "processFailed": "Belge içeriği işlenemedi"
+    },
+    "documents": {
+      "missingId": "Belge kimliği eksik",
+      "notFound": "Belge bulunamadı"
+    },
+    "authCallback": {
+      "failed": "Giriş yapılamadı"
+    }
+  }
+}

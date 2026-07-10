@@ -1,11 +1,14 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/lib/supabase/actions";
 
 export async function MarketingHeader() {
+  const t = await getTranslations("MarketingHeader");
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const isAuthed = !!data?.claims;
@@ -15,6 +18,7 @@ export async function MarketingHeader() {
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-5 sm:px-8">
         <Logo />
         <nav className="flex items-center gap-2">
+          <LanguageSwitcher className="size-8" />
           <ThemeToggle className="size-8" />
           {isAuthed ? (
             <>
@@ -25,11 +29,11 @@ export async function MarketingHeader() {
                   size="sm"
                   className="hidden sm:inline-flex"
                 >
-                  Çıkış yap
+                  {t("signOut")}
                 </Button>
               </form>
               <Button asChild variant="accent" size="sm">
-                <Link href="/library">Uygulamayı aç</Link>
+                <Link href="/library">{t("openApp")}</Link>
               </Button>
             </>
           ) : (
@@ -40,10 +44,10 @@ export async function MarketingHeader() {
                 size="sm"
                 className="hidden sm:inline-flex"
               >
-                <Link href="/login">Giriş yap</Link>
+                <Link href="/login">{t("signIn")}</Link>
               </Button>
               <Button asChild variant="accent" size="sm">
-                <Link href="/signup">Hemen başla</Link>
+                <Link href="/signup">{t("getStarted")}</Link>
               </Button>
             </>
           )}

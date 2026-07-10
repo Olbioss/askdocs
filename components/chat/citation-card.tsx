@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import type { Citation } from "@/lib/types";
 
@@ -10,9 +11,10 @@ export function CitationCard({
   citation: Citation;
   highlighted?: boolean;
 }) {
+  const t = useTranslations("CitationCard");
   const pct = Math.round(citation.similarity * 100);
   const loc = citation.metadata?.page
-    ? `s.${citation.metadata.page}`
+    ? t("pageAbbr", { page: citation.metadata.page })
     : (citation.metadata?.section ?? null);
 
   return (
@@ -41,7 +43,7 @@ export function CitationCard({
 
       <div className="mt-3">
         <div className="mb-1 flex items-center justify-between">
-          <span className="label text-ink-40">Eşleşme</span>
+          <span className="label text-ink-40">{t("match")}</span>
           <span className="font-mono text-[0.625rem] font-semibold text-ink">
             {citation.similarity.toFixed(2)}
           </span>

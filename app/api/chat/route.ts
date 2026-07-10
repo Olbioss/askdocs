@@ -6,6 +6,9 @@ import { retrieveChunks, type RetrievedChunk } from "@/lib/rag/retrieve";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { AskInput, ChatStreamEvent, Citation } from "@/lib/types";
 import { jsonError } from "@/lib/http";
+import { resolveLocale } from "@/lib/i18n/get-locale";
+import { apiMessages, fmt } from "@/lib/i18n/api-messages";
+import type { Locale } from "@/i18n/routing";
 
 // Allow streaming responses up to 30s (raise on Pro if needed).
 export const maxDuration = 30;
@@ -15,14 +18,20 @@ const QUESTIONS_PER_HOUR = 60;
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const ANSWER_IN_TURKISH =
-  "Always answer in Turkish (Türkçe), regardless of the language of the question or the documents.";
+// Answers follow the UI locale, regardless of question/document language.
+const ANSWER_LANGUAGE: Record<Locale, string> = {
+  en: "Always answer in English, regardless of the language of the question or the documents.",
+  tr: "Always answer in Turkish (Türkçe), regardless of the language of the question or the documents.",
+};
 
-export function buildSystemPrompt(chunks: RetrievedChunk[]): string {
+export function buildSystemPrompt(
+  chunks: RetrievedChunk[],
+  locale: Locale = "en",
+): string {
   if (chunks.length === 0) {
     return [
       "You are AskDocs, a document assistant.",
-      ANSWER_IN_TURKISH,
+      ANSWER_LANGUAGE[locale],
       "No relevant context was found in the user's documents for this question.",
       "Tell the user you don't have information about that in their documents.",
       "Do not answer from outside knowledge or guess.",
@@ -41,7 +50,7 @@ export function buildSystemPrompt(chunks: RetrievedChunk[]): string {
     "ONLY the numbered context chunks below. If the answer is not in the context,",
     "say you don't have that information in their documents — do not guess or use",
     "outside knowledge.",
-    ANSWER_IN_TURKISH,
+    ANSWER_LANGUAGE[locale],
     "",
     "For every claim, cite the chunk it came from using its bracket number, e.g. [1].",
     "",
@@ -63,18 +72,18 @@ export function toCitations(chunks: RetrievedChunk[]): Citation[] {
 }
 
 export async function POST(req: Request) {
+  const locale = resolveLocale(req);
+  const m = apiMessages(locale);
+
   // 1. auth — identity from the server-verified session
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return jsonError("Oturum açmanız gerekiyor", 401);
+  if (!user) return jsonError(m.unauthorized, 401);
 
   if (!(await checkRateLimit(user.id, "chat", QUESTIONS_PER_HOUR, 3_600_000))) {
-    return jsonError(
-      `Soru sınırına ulaşıldı (saatte ${QUESTIONS_PER_HOUR}) — biraz sonra tekrar deneyin.`,
-      429,
-    );
+    return jsonError(fmt(m.chat.rateLimited, { limit: QUESTIONS_PER_HOUR }), 429);
   }
 
   // 2. parse + validate the AskInput contract your client sends
@@ -82,20 +91,17 @@ export async function POST(req: Request) {
   try {
     input = (await req.json()) as AskInput;
   } catch {
-    return jsonError("Geçersiz istek gövdesi", 400);
+    return jsonError(m.chat.invalidBody, 400);
   }
   const { question, documentId } = input;
   if (typeof question !== "string" || !question.trim()) {
-    return jsonError("Soru girilmedi", 400);
+    return jsonError(m.chat.emptyQuestion, 400);
   }
   if (question.length > MAX_QUESTION_CHARS) {
-    return jsonError(
-      `Soru çok uzun (en fazla ${MAX_QUESTION_CHARS} karakter)`,
-      400,
-    );
+    return jsonError(fmt(m.chat.tooLong, { max: MAX_QUESTION_CHARS }), 400);
   }
   if (documentId !== undefined && !UUID_RE.test(String(documentId))) {
-    return jsonError("Geçersiz belge kimliği", 400);
+    return jsonError(m.chat.invalidDocId, 400);
   }
 
   // 3. retrieve (scoped to this user, optional single-doc)
@@ -107,7 +113,7 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     // most likely the embedding call failed (e.g. missing GOOGLE_GENERATIVE_AI_API_KEY)
-    return jsonError("Arama başarısız oldu", 500, { detail: String(err) });
+    return jsonError(m.chat.searchFailed, 500, { detail: String(err) });
   }
 
   // 4. stream NDJSON ChatStreamEvent lines: citations first (the UI can show
@@ -116,7 +122,7 @@ export async function POST(req: Request) {
   // base64/atob UTF-8 mangling.
   const result = streamText({
     model: google("gemini-2.5-flash"),
-    system: buildSystemPrompt(retrieved),
+    system: buildSystemPrompt(retrieved, locale),
     prompt: question,
     abortSignal: req.signal, // client abort / disconnect stops generation
     onError: ({ error }) => console.error("chat streamText error:", error),
@@ -140,7 +146,7 @@ export async function POST(req: Request) {
         // via onError); don't enqueue after a client abort — the stream is dead.
         if (!req.signal.aborted) {
           controller.enqueue(
-            line({ type: "error", message: "Cevap oluşturulamadı" }),
+            line({ type: "error", message: m.chat.generationFailed }),
           );
         }
       }

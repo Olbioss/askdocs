@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 
@@ -33,6 +34,7 @@ export function AuthProvider({
   initialUser?: AuthUser | null;
   children: React.ReactNode;
 }) {
+  const t = useTranslations("AuthProvider");
   const router = useRouter();
   const supabase = React.useMemo(() => createClient(), []);
   const [user, setUser] = React.useState<AuthUser | null>(initialUser);
@@ -50,10 +52,10 @@ export function AuthProvider({
   const signOut = React.useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
-    toast.success("Çıkış yapıldı");
+    toast.success(t("signedOut"));
     router.push("/login");
     router.refresh();
-  }, [supabase, router]);
+  }, [supabase, router, t]);
 
   const value = React.useMemo(() => ({ user, signOut }), [user, signOut]);
 

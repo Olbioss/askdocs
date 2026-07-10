@@ -1,0 +1,251 @@
+{
+  "Metadata": {
+    "title": "AskDocs — Ask your documents, get cited answers",
+    "description": "A source-backed (RAG) question-answering workspace. Upload your documents, ask questions, get answers that cite their sources.",
+    "libraryTitle": "Library — AskDocs",
+    "chatTitle": "Chat — AskDocs",
+    "loginTitle": "Sign in — AskDocs",
+    "signupTitle": "Create account — AskDocs"
+  },
+  "Logo": {
+    "home": "AskDocs home"
+  },
+  "ThemeToggle": {
+    "toLight": "Switch to light theme",
+    "toDark": "Switch to dark theme"
+  },
+  "LanguageSwitcher": {
+    "label": "Choose language",
+    "en": "English",
+    "tr": "Türkçe"
+  },
+  "MarketingHeader": {
+    "signOut": "Sign out",
+    "openApp": "Open the app",
+    "signIn": "Sign in",
+    "getStarted": "Get started"
+  },
+  "AppHeader": {
+    "library": "Library",
+    "chat": "Chat",
+    "accountMenu": "Account menu",
+    "notSignedIn": "Not signed in",
+    "signOut": "Sign out",
+    "signIn": "Sign in",
+    "signUp": "Create account"
+  },
+  "SiteFooter": {
+    "tagline": "Ask your documents in plain language; get answers grounded in cited passages.",
+    "product": "Product",
+    "library": "Library",
+    "chat": "Chat",
+    "getStarted": "Get started",
+    "company": "Company",
+    "about": "About",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "Marketing": {
+    "badge": "Cited Q&A",
+    "headline1": "Ask your",
+    "headline2": "documents.",
+    "headline3": "Get the proof.",
+    "heroBody": "Upload your contracts, notes and research. Ask in plain language. Every answer arrives tied to the passages it rests on, with similarity scores you can audit.",
+    "openWorkspace": "Open workspace",
+    "askQuestion": "Ask a question",
+    "getStarted": "Get started",
+    "signedInNote": "Signed in · Pick up where you left off",
+    "signedOutNote": "No credit card · Free · PDF · DOCX · Markdown",
+    "previewAnswer": "Answer",
+    "previewSources": "2 sources",
+    "previewQuestion": "Q · What is our liquidation preference?",
+    "previewBody": "Investors hold a <b>1× non-participating</b> liquidation preference paid before common shareholders<s1></s1>. The term sheet includes no full-ratchet anti-dilution protection<s2></s2>.",
+    "previewFile": "Series-A-Term-Sheet.pdf",
+    "previewLoc1": "p.3",
+    "previewLoc2": "p.4",
+    "marquee": [
+      "Cited answers",
+      "PDF",
+      "DOCX",
+      "Markdown",
+      "Contracts",
+      "Board notes",
+      "Research notes",
+      "Similarity scores",
+      "pgvector",
+      "Gemini 2.5 Flash"
+    ],
+    "howItWorks": "How it works",
+    "step1Title": "Upload",
+    "step1Body": "Drop a PDF, DOCX or Markdown file. We extract the text, split it into chunks and embed them into a pgvector index.",
+    "step2Title": "Ask",
+    "step2Body": "Ask in plain language. We find the closest passages and answer with Gemini 2.5 Flash.",
+    "step3Title": "Verify",
+    "step3Body": "Every claim links to its source passage and similarity score. Trust, but verify.",
+    "cta": "Put your documents to work."
+  },
+  "Auth": {
+    "createdToast": "Account created",
+    "signedInToast": "Signed in",
+    "genericError": "Something went wrong",
+    "checkInbox": "Check your inbox",
+    "verifyEmail": "Verify your email",
+    "verifySent": "We sent you a confirmation link to finish setting up your account. Open it and you'll be signed in automatically.",
+    "backToLogin": "Back to sign in",
+    "signupLabel": "Create account",
+    "welcomeBack": "Welcome back",
+    "signupTitle": "Start asking your documents",
+    "loginTitle": "Sign in to AskDocs",
+    "name": "Name",
+    "email": "Email",
+    "emailPlaceholder": "you@company.com",
+    "password": "Password",
+    "minChars": "At least 6 characters",
+    "creating": "Creating…",
+    "signingIn": "Signing in…",
+    "createAccount": "Create account",
+    "signIn": "Sign in",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithGithub": "Continue with GitHub",
+    "haveAccount": "Already have an account?",
+    "newHere": "New here?"
+  },
+  "AuthProvider": {
+    "signedOut": "Signed out"
+  },
+  "Library": {
+    "workspace": "Workspace",
+    "title": "Library",
+    "loading": "Loading…",
+    "stats": "{total} {total, plural, one {document} other {documents}} · {ready} ready to query",
+    "documents": "Documents",
+    "emptyTitle": "No documents yet",
+    "emptyBody": "Upload a file above to add it to the index. Once it's ready, switch to chat and start asking questions.",
+    "loadFailed": "Couldn't load documents",
+    "indexed": "{name} added to the index",
+    "readyToQuery": "Ready to query in chat.",
+    "uploadFailed": "{name} failed to upload",
+    "deleted": "Deleted: {name}",
+    "deleteFailed": "Delete failed",
+    "fallbackDoc": "document"
+  },
+  "UploadZone": {
+    "region": "Document upload area",
+    "cantUpload": "{name} can't be uploaded",
+    "legacyDoc": "The legacy .doc format isn't supported — save it as .docx or PDF.",
+    "onlyFormats": "Only PDF, DOCX, TXT and Markdown are supported.",
+    "tooLarge": "Files can be at most 10 MB.",
+    "dropTitle": "Drop documents to upload",
+    "dropBody": "PDF, DOCX, TXT or Markdown — up to 10 MB each. Drag them here or pick from your device.",
+    "chooseFile": "Choose file"
+  },
+  "DocumentCard": {
+    "pages": "{count} pages",
+    "chunks": "{count} chunks",
+    "ask": "Ask",
+    "askAbout": "Ask about {name}",
+    "deleteAria": "Delete document {name}",
+    "deleteTitle": "Delete document",
+    "deleteBody": "This permanently removes <n>{name}</n> and all of its indexed chunks. It cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "StatusBadge": {
+    "ready": "Ready",
+    "processing": "Processing",
+    "failed": "Failed"
+  },
+  "Chat": {
+    "sourcesPanelAria": "Toggle sources panel ({count})",
+    "sources": "Sources",
+    "new": "New",
+    "stopped": "Stopped.",
+    "errorFallback": "Something went wrong while getting the answer.",
+    "incomplete": "Answer didn't finish"
+  },
+  "ChatEmpty": {
+    "title": "Ask your documents.",
+    "body": "Ask in plain language. Every answer cites the passages it rests on, with a similarity score you can audit.",
+    "ask": "Ask",
+    "suggestions": [
+      "What are the valuation and liquidation preference in the term sheet?",
+      "How did the business perform last quarter?",
+      "How much annual leave do employees get, and what's the remote-work policy?",
+      "Why does hybrid search reduce hallucinations?"
+    ]
+  },
+  "ChatComposer": {
+    "placeholder": "Ask something about your documents…",
+    "stopAria": "Stop generating the answer",
+    "stop": "Stop",
+    "ask": "Ask",
+    "hint": "Enter to send · Shift + Enter for a new line"
+  },
+  "ChatMessage": {
+    "you": "You",
+    "searching": "Searching sources…",
+    "retry": "Try again",
+    "sources": "Sources"
+  },
+  "ScopeSelect": {
+    "all": "All sources",
+    "aria": "Choose which documents to search",
+    "scopeLabel": "Search scope",
+    "none": "No sources yet — upload from the Library"
+  },
+  "CitationsPanel": {
+    "sources": "Sources",
+    "close": "Close sources",
+    "empty": "An answer's sources will appear here."
+  },
+  "CitationCard": {
+    "match": "Match",
+    "pageAbbr": "p.{page}"
+  },
+  "ErrorPage": {
+    "label": "Error",
+    "title": "Something went wrong.",
+    "body": "An unexpected error interrupted the page. Your documents are safe — try again.",
+    "retry": "Try again"
+  },
+  "NotFound": {
+    "title": "This page isn't in the library.",
+    "body": "The address may be mistyped, or the page may have moved.",
+    "home": "Back to home"
+  },
+  "OgImage": {
+    "headline": "Ask your documents. Get cited answers.",
+    "footer": "RAG · CITED ANSWERS · PGVECTOR"
+  },
+  "Api": {
+    "unauthorized": "You need to sign in",
+    "chat": {
+      "rateLimited": "Question limit reached ({limit}/hour) — try again in a bit.",
+      "invalidBody": "Invalid request body",
+      "emptyQuestion": "No question provided",
+      "tooLong": "Question too long (max {max} characters)",
+      "invalidDocId": "Invalid document id",
+      "searchFailed": "Search failed",
+      "generationFailed": "Couldn't generate an answer"
+    },
+    "upload": {
+      "rateLimited": "Upload limit reached ({limit}/hour) — try again in a bit.",
+      "noFile": "No file selected",
+      "legacyDoc": "The legacy .doc format isn't supported — please save it as .docx or PDF and upload again.",
+      "unsupportedType": "Unsupported file type: {type}",
+      "tooLarge": "File too large (max 10 MB)",
+      "storeFailed": "Couldn't store the file: {message}",
+      "saveFailed": "Couldn't save the document: {message}",
+      "noText": "No text could be extracted — the file may be empty or image-only",
+      "processFailed": "The document's content couldn't be processed"
+    },
+    "documents": {
+      "missingId": "Missing document id",
+      "notFound": "Document not found"
+    },
+    "authCallback": {
+      "failed": "Sign-in failed"
+    }
+  }
+}
